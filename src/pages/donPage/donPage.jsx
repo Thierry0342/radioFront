@@ -8,7 +8,7 @@ import donMensuelService from '../../services/donMensuelService';
 import { 
     FaCheckCircle, FaClock, FaCalendarPlus, FaPlusCircle, 
     FaTimes, FaDonate, FaSearch, FaChevronRight, FaChevronLeft,
-    FaTrashAlt, FaPen, FaListAlt,FaHeart,FaPlus 
+    FaTrashAlt, FaPen, FaListAlt,FaHeart,FaPlus,FaLayerGroup,
 } from 'react-icons/fa';
 
 // Liste des mois 
@@ -16,6 +16,7 @@ const MOIS_LIST = [
     "JAN", "FEV", "MAR", "AVR", "MAI", "JUI", "JUIL", 
     "AOU", "SEP", "OCT", "NOV", "DEC"
 ];
+
 
 // Fonction utilitaire pour mapper les paiements existants à l'état du formulaire
 const mapExistingPaymentsToStatus = (existingPayments = []) => {
@@ -51,7 +52,11 @@ const mapExistingPaymentsToStatus = (existingPayments = []) => {
 };
 
 const DonPage = () => {
-    
+    //section serie de don
+    const [showBatchSection, setShowBatchSection] = useState(false);
+    const [tempDonations, setTempDonations] = useState([]); 
+    const [batchPersonne, setBatchPersonne] = useState({ nom: '', contact: '', adresse: '' });
+    const [batchDon, setBatchDon] = useState({ montant: '', idType: '' });
     const [donationTypes, setDonationTypes] = useState([]); 
     const [existingDonors, setExistingDonors] = useState([]); 
     const [recentDons, setRecentDons] = useState([]); 
@@ -80,7 +85,7 @@ const DonPage = () => {
         annee: new Date().getFullYear().toString(), 
     });
     
-    const [amountToRecord, setAmountToRecord] = useState('50000'); 
+    const [amountToRecord, setAmountToRecord] = useState(''); 
     const [paymentsToRecord, setPaymentsToRecord] = useState([]); 
     const [monthlyStatus, setMonthlyStatus] = useState(mapExistingPaymentsToStatus()); 
     const [isLoading, setIsLoading] = useState(false);
@@ -557,7 +562,73 @@ const handleAddNewType = async () => {
             setIsLoading(false);
         }
     };
+// --- FONCTIONS POUR LA GESTION DE LA SÉRIE ---
 
+const addToTempList = () => {
+    if (!batchPersonne.nom || !batchDon.montant || !batchDon.idType) {
+        alert("Veuillez remplir le nom, le montant et le type.");
+        return;
+    }
+
+    const typeObj = donationTypes.find(t => t.id == batchDon.idType);
+    
+    const newItem = {
+        idTemp: Date.now(),
+        personne: { 
+            nom: batchPersonne.nom.toUpperCase(),
+            contact: batchPersonne.contact || '',
+            adresse: batchPersonne.adresse || '' // 👈 On récupère l'adresse ici
+        },
+        don: { 
+            montant: batchDon.montant,
+            idType: parseInt(batchDon.idType),
+            dateDon: new Date().toISOString().substring(0, 10)
+        },
+        typeLibelle: typeObj ? typeObj.libelle : "TYPE"
+    };
+
+    setTempDonations([...tempDonations, newItem]);
+
+    // Réinitialisation : On vide le nom et le montant, 
+    // mais on peut laisser l'adresse et le type si vous saisissez plusieurs personnes du même endroit
+    setBatchPersonne({ ...batchPersonne, nom: '' }); 
+    setBatchDon({ ...batchDon, montant: '' });
+};
+
+const removeFromTempList = (id) => {
+    setTempDonations(tempDonations.filter(item => item.idTemp !== id));
+};
+
+const saveAllTempDonations = async () => {
+    if (tempDonations.length === 0) return;
+    
+    setIsLoading(true);
+    try {
+        // On boucle sur la liste temporaire pour enregistrer chaque don
+        for (const item of tempDonations) {
+            const payload = {
+                personne: item.personne,
+                don: {
+                    montant: item.don.montant,
+                    dateDon: item.don.dateDon,
+                    idType: parseInt(item.don.idType)
+                }
+            };
+            await donService.post(payload);
+        }
+        
+        alert("✅ Série de dons enregistrée avec succès !");
+        setTempDonations([]); // Vider la liste
+        setShowBatchSection(false); // Fermer la section
+        await fetchRecentDons(); // Rafraîchir la table des dons récents
+        
+    } catch (error) {
+        console.error("Erreur lors de l'enregistrement de la série:", error);
+        alert("❌ Une erreur est survenue lors de l'enregistrement groupé.");
+    } finally {
+        setIsLoading(false);
+    }
+};
 
     return (
         <div className="container-fluid mt-4">
@@ -816,11 +887,12 @@ const handleAddNewType = async () => {
                             </div>
                         )}
                         
+                       {/* --- TON BOUTON EXISTANT --- */}
                         <button 
                             type="submit" 
                             className={`btn btn-lg w-100 shadow-sm ${isEditing ? 'btn-warning' : 'btn-primary'}`} 
                             disabled={isLoading}
-                               >
+                        >
                             {isLoading 
                                 ? 'Opération en cours...' 
                                 : isEditing 
@@ -828,16 +900,45 @@ const handleAddNewType = async () => {
                                     : <><FaHeart className="me-2" /> Enregistrer le Don ({selectedTypeLabel})</>
                             }
                         </button>
-                        
+
                         {isEditing && (
-                             <button 
+                            <button 
                                 type="button" 
                                 className="btn btn-sm btn-outline-secondary w-100 mt-2" 
                                 onClick={resetForm}
-                             >
+                            >
                                 <FaTimes className="me-1" /> Annuler la Modification
                             </button>
                         )}
+
+                        {/* --- LE NOUVEAU BOUTON POUR LA SÉRIE --- */}
+                        {!isEditing && (
+                            <div className="mt-3">
+                                <div className="d-flex align-items-center my-3">
+                                    <hr className="flex-grow-1" />
+                                    <span className="mx-2 text-muted small fw-bold text-uppercase">Ou</span>
+                                    <hr className="flex-grow-1" />
+                                </div>
+                                
+                                <button 
+                                    type="button" 
+                                    className={`btn w-100 py-2 border-dashed shadow-sm d-flex align-items-center justify-content-center gap-2 ${showBatchSection ? 'btn-dark' : 'btn-outline-info'}`}
+                                    style={{ borderStyle: 'dashed', borderWidth: '2px' }}
+                                    onClick={() => {
+                                        setShowBatchSection(!showBatchSection);
+                                        // Optionnel : scroller vers le bas automatiquement
+                                        if(!showBatchSection) setTimeout(() => window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'}), 100);
+                                    }}
+                                >
+                                    <FaLayerGroup /> 
+                                    {showBatchSection ? "Fermer la saisie en série" : "Ouvrir la saisie en série"}
+                                    {tempDonations.length > 0 && (
+                                        <span className="badge bg-danger ms-2">{tempDonations.length}</span>
+                                    )}
+                                </button>
+                            </div>
+                        )}
+                     
                     </div>
                 </div>
             </form>
@@ -907,6 +1008,153 @@ const handleAddNewType = async () => {
                     )}
                 </div>
             </div>
+            {showBatchSection && (
+    <div className="mt-5 pt-4 border-top animate__animated animate__fadeIn">
+        <div className="d-flex align-items-center mb-4">
+            <div className="bg-info p-2 rounded-3 me-3 text-white">
+                <FaLayerGroup size={24} />
+            </div>
+            <div>
+                <h3 className="mb-0 text-dark fw-bold">Saisie de Dons en Série</h3>
+                <p className="text-muted mb-0">Ajoutez plusieurs donateurs à la liste avant de tout valider d'un coup.</p>
+            </div>
+        </div>
+
+        <div className="row g-4">
+            {/* COLONNE GAUCHE : FORMULAIRE RAPIDE */}
+            <div className="col-lg-4">
+                <div className="card shadow-sm border-0 bg-light">
+                    <div className="card-body">
+                        <div className="mb-3">
+                            <label className="form-label fw-bold small text-uppercase">Type</label>
+                            <div className="input-group">
+                                <select 
+                                    className="form-select border-primary-subtle"
+                                    value={batchDon.idType || ""}
+                                    onChange={(e) => setBatchDon({...batchDon, idType: e.target.value})}
+                                >
+                                    <option value="">Choisir...</option>
+                                    {donationTypes.map(t => <option key={t.id} value={t.id}>{t.libelle}</option>)}
+                                </select>
+                                <button className="btn btn-primary" onClick={() => setIsSelectionTypeModalOpen(true)}>
+                                    <FaSearch />
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="mb-3">
+                            <label className="form-label fw-bold small text-uppercase">Nom du Donateur</label>
+                            <input 
+                                type="text" 
+                                className="form-control" 
+                                placeholder="NOM COMPLET"
+                                value={batchPersonne.nom}
+                                onChange={(e) => setBatchPersonne({...batchPersonne, nom: e.target.value.toUpperCase()})}
+                            />
+                        </div>
+
+                        {/* AJOUT DU CHAMP ADRESSE ICI */}
+                        <div className="mb-3">
+                            <label className="form-label fw-bold small text-uppercase">Adresse</label>
+                            <input 
+                                type="text" 
+                                className="form-control" 
+                                placeholder="LOT OU QUARTIER"
+                                value={batchPersonne.adresse}
+                                onChange={(e) => setBatchPersonne({...batchPersonne, adresse: e.target.value})}
+                            />
+                        </div>
+
+                        <div className="row">
+                            <div className="col-md-6 mb-3">
+                                <label className="form-label fw-bold small text-uppercase">Montant (Ar)</label>
+                                <input 
+                                    type="number" 
+                                    className="form-control fw-bold text-primary" 
+                                    value={batchDon.montant}
+                                    onChange={(e) => setBatchDon({...batchDon, montant: e.target.value})}
+                                />
+                            </div>
+                            <div className="col-md-6 mb-3">
+                                <label className="form-label fw-bold small text-uppercase">Contact</label>
+                                <input 
+                                    type="text" 
+                                    className="form-control" 
+                                    placeholder="03x xx xxx xx"
+                                    value={batchPersonne.contact}
+                                    onChange={(e) => setBatchPersonne({...batchPersonne, contact: e.target.value})}
+                                />
+                            </div>
+                        </div>
+
+                        <button className="btn btn-success w-100 fw-bold shadow-sm mt-2" onClick={addToTempList}>
+                            <FaPlus className="me-2" /> Ajouter à la liste
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {/* COLONNE DROITE : TABLEAU TEMPORAIRE MODIFIÉ */}
+            <div className="col-lg-8">
+                <div className="card shadow-sm border-0 h-100">
+                    <div className="card-header bg-white py-3">
+                        <div className="d-flex justify-content-between align-items-center">
+                            <span className="fw-bold">Liste temporaire</span>
+                            <span className="badge bg-primary px-3 py-2">
+                                Total : {tempDonations.reduce((sum, item) => sum + parseFloat(item.don.montant || 0), 0).toLocaleString()} Ar
+                            </span>
+                        </div>
+                    </div>
+                    <div className="table-responsive" style={{minHeight: '200px'}}>
+                        <table className="table table-hover align-middle mb-0">
+                            <thead className="table-light">
+                                <tr>
+                                    <th>Donateur</th>
+                                    <th>Adresse</th> {/* NOUVELLE COLONNE */}
+                                    <th>Type</th>
+                                    <th>Montant</th>
+                                    <th className="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {tempDonations.length === 0 ? (
+                                    <tr><td colSpan="5" className="text-center py-5 text-muted italic">Aucun don dans la série.</td></tr>
+                                ) : (
+                                    tempDonations.map((item) => (
+                                        <tr key={item.idTemp}>
+                                            <td>
+                                                <div className="fw-bold">{item.personne.nom}</div>
+                                                <div className="small text-muted">{item.personne.contact}</div>
+                                            </td>
+                                            {/* AFFICHAGE DE L'ADRESSE DANS LA LISTE */}
+                                            <td className="small text-muted">{item.personne.adresse || "---"}</td>
+                                            <td><span className="badge bg-info-subtle text-info border border-info-subtle">{item.typeLibelle}</span></td>
+                                            <td className="text-primary fw-bold">{parseFloat(item.don.montant).toLocaleString()} Ar</td>
+                                            <td className="text-center">
+                                                <button className="btn btn-link text-danger p-0" onClick={() => removeFromTempList(item.idTemp)}>
+                                                    <FaTrashAlt />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div className="card-footer bg-white border-0 p-3">
+                        <button 
+                            className="btn btn-primary btn-lg w-100 fw-bold" 
+                            disabled={tempDonations.length === 0 || isLoading}
+                            onClick={saveAllTempDonations}
+                        >
+                            {isLoading ? "Enregistrement groupé..." : `VALIDER ET ENREGISTRER LA SÉRIE (${tempDonations.length})`}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+)}      
             {/* --- MODAL DE SÉLECTION DE TYPE --- */}
             {isSelectionTypeModalOpen && (
     <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.6)', zIndex: 1060 }}>

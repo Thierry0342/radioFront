@@ -59,3 +59,123 @@
       grid-template-columns: 1fr;
   }
 }
+/* --- MODAL --- */
+.custom-modal-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex; justify-content: center; align-items: center;
+  z-index: 2000;
+}
+
+.custom-modal-content {
+  background: white;
+  width: 90%; max-width: 650px;
+  border-radius: 15px;
+  padding: 25px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+}
+
+.modal-header-custom {
+  display: flex; justify-content: space-between; align-items: center;
+  border-bottom: 1px solid #eee; margin-bottom: 20px; padding-bottom: 10px;
+}
+
+.modal-body-custom {
+  max-height: 400px; overflow-y: auto; padding: 5px;
+}
+
+/* --- CARTES DE DÉTAILS MODAL --- */
+.detail-card {
+  padding: 15px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.detail-title { font-size: 0.7rem; font-weight: bold; text-transform: uppercase; }
+.detail-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+.detail-value { font-weight: bold; font-size: 1.1rem; }
+.detail-badge { padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; }
+
+/* --- COULEURS DYNAMIQUES --- */
+.border-purple { border-left: 4px solid #6f42c1; background: #fdfbff; }
+.text-purple { color: #6f42c1; }
+.badge-purple { background: #efe7ff; color: #6f42c1; }
+
+.border-pink { border-left: 4px solid #d63384; background: #fffafc; }
+.text-pink { color: #d63384; }
+.badge-pink { background: #ffeef6; color: #d63384; }
+
+.border-teal { border-left: 4px solid #20c997; background: #fafffd; }
+.text-teal { color: #20c997; }
+.badge-teal { background: #e6fffa; color: #20c997; }
+
+.border-indigo { border-left: 4px solid #6610f2; background: #fcfaff; }
+.text-indigo { color: #6610f2; }
+.badge-indigo { background: #f0ebff; color: #6610f2; }
+
+.border-orange { border-left: 4px solid #fd7e14; background: #fffcf9; }
+.text-orange { color: #fd7e14; }
+.badge-orange { background: #fff5eb; color: #fd7e14; }
+
+.border-cyan { border-left: 4px solid #0dcaf0; background: #f7feff; }
+.text-cyan { color: #0dcaf0; }
+.badge-cyan { background: #e7faff; color: #0dcaf0; }
+
+.close-btn { border: none; background: transparent; font-size: 1.2rem; cursor: pointer; }
+/* --- Badges pour les cartes principales (StatsCard) --- */
+.stats-badges-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.badge-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 50px; /* Forme de pilule */
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* Badge gris simple pour le nombre de dons */
+.badge-dons {
+  background-color: #f1f3f5;
+  color: #6c757d;
+}
+
+/* Badge coloré/sombre pour les donateurs (mise en valeur) */
+.badge-donateurs {
+  background-color: #e9ecef; /* Ou une couleur légère selon ton thème */
+  color: #495057;
+  border: 1px solid #dee2e6;
+}
+
+.badge-more {
+  background-color: #f3e5f5;
+  color: #7b1fa2;
+  cursor: pointer;
+}
+
+.icon-tiny {
+  margin-right: 4px;
+  font-size: 0.8rem;
+}
+
+/* --- Badges pour la Modal --- */
+.modal-donor-badge {
+  font-size: 0.75rem;
+  font-weight: bold;
+  padding: 3px 8px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+}
+
+/* Couleurs de fond légères pour la modal */
+.bg-purple-light { background-color: #f3e5f5; }
+.bg-pink-light { background-color: #fce4ec; }
+.bg-teal-light { background-color: #e0f2f1; }
+.bg-indigo-light { background-color: #e8eaf6; }
+.bg-orange-light { background-color: #fff3e0; }
+.bg-cyan-light { background-color: #e0f7fa; }

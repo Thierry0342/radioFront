@@ -17,7 +17,7 @@ const navItems = [
 ];
 
 const profile = {
-    name: 'Danielle Garmin',
+    name: 'Radio Maria',
     role: 'Admin',
     avatar: ''
 };

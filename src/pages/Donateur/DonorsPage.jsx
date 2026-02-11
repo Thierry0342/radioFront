@@ -168,7 +168,7 @@ const DonorsPage = () => {
                                             <tr key={don.idDon || idx}>
                                                 <td>{new Date(don.dateDon).toLocaleDateString('fr-FR')}</td>
                                                 <td>{don.TypeDon?.libelle || 'Don ponctuel'}</td>
-                                                <td className="amount-col">{don.montant} €</td>
+                                                <td className="amount-col">{don.montant} Ar</td>
                                             </tr>
                                         ))}
                                     </tbody>

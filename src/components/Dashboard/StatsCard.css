@@ -104,3 +104,144 @@
     transform: rotate(45deg);
     pointer-events: none; /* Ignorer les événements de la souris */
   }
+  .stats-card {
+    background: #ffffff;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease;
+    border: 1px solid #f0f0f0;
+    height: 100%;
+    min-height: 140px; /* Hauteur minimale pour éviter que ça s'écrase */
+}
+
+.stats-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.stats-card-body {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.stats-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.stats-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+}
+
+.stats-value {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #2c3e50;
+    margin-bottom: 8px;
+}
+
+.stats-subtitle {
+    margin-top: auto;
+    font-size: 0.9rem;
+}
+
+.stats-icon-container {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+/* --- STYLE DES BADGES --- */
+/* Important : On force l'affichage flex pour aligner les badges */
+.stats-badges-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+}
+
+.badge-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* Badge Nombre de Dons (Bleu très clair) */
+.badge-dons {
+    background-color: #e3f2fd;
+    color: #0d6efd;
+    border: 1px solid #cfe2ff;
+}
+
+/* Badge Nombre de Donateurs (Vert très clair) */
+.badge-donateurs {
+    background-color: #e8f5e9;
+    color: #198754;
+    border: 1px solid #d1e7dd;
+}
+
+.icon-tiny {
+    margin-right: 4px;
+    font-size: 0.8rem;
+}
+/* --- Couleurs thématiques pour les cartes --- */
+
+/* Thème Bleu (TSOTRA) */
+.stats-card.theme-blue {
+  border-top: 4px solid #0d6efd;
+  background: linear-gradient(180deg, #f0f7ff 0%, #ffffff 100%);
+}
+.stats-card.theme-blue .stats-icon-container {
+  background-color: rgba(13, 110, 253, 0.15);
+  color: #0d6efd;
+}
+
+/* Thème Vert (MAHARITRA) */
+.stats-card.theme-green {
+  border-top: 4px solid #198754;
+  background: linear-gradient(180deg, #f0fff4 0%, #ffffff 100%);
+}
+.stats-card.theme-green .stats-icon-container {
+  background-color: rgba(25, 135, 84, 0.15);
+  color: #198754;
+}
+
+/* Thème Orange (MOBILE MONEY) */
+.stats-card.theme-orange {
+  border-top: 4px solid #fd7e14;
+  background: linear-gradient(180deg, #fffaf0 0%, #ffffff 100%);
+}
+.stats-card.theme-orange .stats-icon-container {
+  background-color: rgba(253, 126, 20, 0.15);
+  color: #fd7e14;
+}
+
+/* Thème Violet (AUTRES) */
+.stats-card.theme-purple {
+  border-top: 4px solid #6f42c1;
+  background: linear-gradient(180deg, #f8f0ff 0%, #ffffff 100%);
+}
+.stats-card.theme-purple .stats-icon-container {
+  background-color: rgba(111, 66, 193, 0.15);
+  color: #6f42c1;
+}
+
+/* Ajustement des titres pour qu'ils héritent de la couleur */
+.theme-blue .stats-title { color: #0d6efd !important; }
+.theme-green .stats-title { color: #198754 !important; }
+.theme-orange .stats-title { color: #fd7e14 !important; }
+.theme-purple .stats-title { color: #6f42c1 !important; }
