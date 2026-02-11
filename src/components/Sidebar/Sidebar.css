@@ -1,0 +1,173 @@
+:root {
+    --sidebar-width: 260px;
+    --sidebar-collapsed-width: 80px; /* Nouvelle variable pour la largeur réduite */
+    --sidebar-bg: #1f2937;
+    --link-color: #9ca3af;
+    --active-bg: #3b82f6;
+    --active-text: white;
+}
+
+.sidebar {
+    width: var(--sidebar-width);
+    min-width: var(--sidebar-width);
+    background-color: var(--sidebar-bg);
+    color: var(--link-color);
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+    position: sticky;
+    top: 0;
+    
+    /* --- AJOUT: Transition douce --- */
+    transition: all 0.3s ease;
+}
+
+/* --- AJOUT: Styles quand la sidebar est réduite --- */
+.sidebar.collapsed {
+    width: var(--sidebar-collapsed-width);
+    min-width: var(--sidebar-collapsed-width);
+}
+
+/* En-tête / Logo et Bouton Toggle */
+.sidebar-header {
+    padding: 0 20px 20px 20px;
+    border-bottom: 1px solid #374151;
+    /* Flex pour aligner logo et flèche */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 60px; /* Fixer une hauteur pour éviter les sauts */
+}
+
+/* Centrer le contenu du header si réduit */
+.sidebar.collapsed .sidebar-header {
+    justify-content: center;
+    padding: 0 0 20px 0;
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+    margin: 0;
+    white-space: nowrap; /* Empêche le texte de revenir à la ligne pendant la transition */
+}
+
+/* Nouveau style pour le bouton flèche */
+.toggle-btn {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.toggle-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Section Profil */
+.sidebar-profile {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #374151;
+    margin-bottom: 20px;
+    /* Empêche le débordement pendant la transition */
+    overflow: hidden; 
+}
+
+.sidebar.collapsed .sidebar-profile {
+    justify-content: center;
+    padding: 20px 0;
+}
+
+.profile-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    /* Marge droite supprimée si réduit pour centrer */
+    margin-right: 10px;
+    flex-shrink: 0; /* Empêche l'image de s'écraser */
+}
+
+.sidebar.collapsed .profile-avatar {
+    margin-right: 0;
+}
+
+.profile-info {
+    /* Animation pour le texte */
+    white-space: nowrap;
+}
+
+/* Navigation */
+.nav-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #4b5563;
+    text-transform: uppercase;
+    padding: 10px 20px 5px;
+    margin-top: 15px;
+    white-space: nowrap;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    text-decoration: none;
+    color: var(--link-color);
+    font-size: 0.95rem;
+    transition: background-color 0.2s;
+    border-left: 3px solid transparent;
+    overflow: hidden; /* Important pour la transition */
+}
+
+/* Centrer les icônes quand réduit */
+.sidebar.collapsed .nav-item {
+    justify-content: center;
+    padding: 12px 0;
+}
+
+.nav-item:hover {
+    background-color: #374151;
+    color: white;
+}
+
+.nav-item.active {
+    background-color: var(--active-bg);
+    color: var(--active-text);
+    border-left: 3px solid #ffcc00;
+    font-weight: 600;
+}
+
+.nav-icon {
+    font-size: 1.2rem; /* Légèrement plus grand */
+    margin-right: 12px;
+    display: flex; /* Pour bien centrer l'icône */
+}
+
+.sidebar.collapsed .nav-icon {
+    margin-right: 0;
+}
+
+.sidebar-widgets {
+    margin-top: auto;
+}
+
+/* --- Ajustement du texte des liens --- */
+.link-text {
+    white-space: nowrap;
+    opacity: 1;
+    transition: opacity 0.2s;
+}

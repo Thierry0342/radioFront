@@ -1,0 +1,16 @@
+.app-container {
+  display: flex;
+  height: 100vh;
+  background-color: #f4f7f6; /* Couleur de fond gris clair */
+}
+
+.main-content {
+  flex: 1; /* Prend tout l'espace restant */
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto; /* Permet le scroll si le contenu est long */
+}
+
+.page-content {
+  padding: 20px;
+}

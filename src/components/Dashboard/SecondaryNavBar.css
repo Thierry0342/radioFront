@@ -1,0 +1,48 @@
+/* --- Variables --- */
+:root {
+    --nav-bg: #3b82f6;      /* Bleu vif de la barre */
+    --active-text: #ffffff; /* Texte blanc actif */
+    --inactive-text: #bfdbfe; /* Texte bleu très clair inactif */
+}
+
+.secondary-nav-bar {
+    background: var(--nav-bg);
+    display: flex;
+    justify-content: flex-start; /* Aligner les liens à gauche */
+    align-items: center;
+    border-radius: 8px; /* Coins légèrement arrondis */
+    margin-top: 30px; /* Espace au-dessus */
+    margin-bottom: 30px; /* Espace en dessous */
+    overflow-x: auto; /* Permet le scroll horizontal sur les petits écrans */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    min-height: 50px;
+}
+
+.secondary-nav-item {
+    padding: 12px 20px;
+    text-decoration: none;
+    color: var(--inactive-text);
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: background-color 0.2s, color 0.2s;
+    white-space: nowrap; /* Empêche le texte de se couper */
+}
+
+.secondary-nav-item:hover {
+    background-color: rgba(255, 255, 255, 0.1); /* Léger survol */
+    color: var(--active-text);
+}
+
+.secondary-nav-item.active {
+    background-color: #2563eb; /* Un bleu légèrement plus foncé pour l'élément actif */
+    color: var(--active-text);
+    border-radius: 8px; /* Rendre l'actif bien visible */
+}
+
+/* Règle pour les petits écrans */
+@media (max-width: 600px) {
+    .secondary-nav-bar {
+        border-radius: 0; /* Pas d'arrondi sur toute la largeur mobile */
+        margin: 15px 0;
+    }
+}

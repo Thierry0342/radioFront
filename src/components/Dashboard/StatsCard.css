@@ -1,0 +1,106 @@
+/* --- Variables pour les couleurs des cartes --- */
+:root {
+    /* Ombres et arrondis */
+    --card-radius: 16px;
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  
+    /* Gradients vifs inspirés de l'image (couleurs de tes classes .card-xxx) */
+    --blue-grad: linear-gradient(135deg, #3b82f6, #2563eb);
+    --red-grad: linear-gradient(135deg, #ef4444, #dc2626);
+    --purple-grad: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    --dark-grad: linear-gradient(135deg, #374151, #1f2937);
+    --green-grad: linear-gradient(135deg, #10b981, #059669);
+    --orange-grad: linear-gradient(135deg, #f59e0b, #d97706);
+    --teal-grad: linear-gradient(135deg, #14b8a6, #0d9488);
+  }
+  
+  /* --- Style de la Carte de Statistiques --- */
+  .stats-card {
+    border-radius: var(--card-radius);
+    padding: 24px; /* Augmenté légèrement pour un look plus pro */
+    display: flex;
+    align-items: center;
+    color: white; /* Le texte doit être blanc sur les fonds colorés */
+    box-shadow: var(--shadow-md);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer; /* Indique qu'elle est cliquable */
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .stats-card:hover {
+    transform: translateY(-5px); /* Donne l'impression qu'elle se soulève */
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+  
+  /* Conteneur de l'icône (le cercle à gauche) */
+  .card-icon-wrapper {
+    background-color: rgba(255, 255, 255, 0.15); /* Cercle semi-transparent */
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem; /* Grosse icône */
+    margin-right: 20px;
+    flex-shrink: 0; /* Empêche l'icône de rétrécir */
+  }
+  
+  /* Contenu Texte (Valeur et Titre) */
+  .card-content {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .card-value {
+    font-size: 2.2rem; /* Très grand pour la valeur */
+    font-weight: 800;
+    margin: 0;
+    line-height: 1; /* Supprime l'espace vertical inutile */
+  }
+  
+  .card-title {
+    font-size: 0.95rem;
+    opacity: 0.9;
+    margin-top: 5px;
+    font-weight: 500;
+    white-space: nowrap; /* Empêche le titre de se couper sur la même ligne */
+  }
+  
+  /* --- Thèmes de couleurs (Classes de fond) --- */
+  
+  .card-blue {
+    background: var(--blue-grad);
+  }
+  .card-red {
+    background: var(--red-grad);
+  }
+  .card-purple {
+    background: var(--purple-grad);
+  }
+  .card-dark-blue {
+    background: var(--dark-grad);
+  }
+  .card-green {
+    background: var(--green-grad);
+  }
+  .card-orange {
+    background: var(--orange-grad);
+  }
+  .card-teal {
+    background: var(--teal-grad);
+  }
+  
+  /* --- Optionnel : Effet d'arrière-plan (comme une légère texture) --- */
+  .card-bg-effect {
+    position: absolute;
+    top: -30px;
+    right: -30px;
+    width: 100px;
+    height: 100px;
+    background-color: rgba(255, 255, 255, 0.05); /* Cercle très léger */
+    border-radius: 50%;
+    transform: rotate(45deg);
+    pointer-events: none; /* Ignorer les événements de la souris */
+  }

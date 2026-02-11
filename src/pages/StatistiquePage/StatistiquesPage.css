@@ -1,0 +1,81 @@
+/* StatistiquesPage.css */
+
+.stats-container {
+    animation: fadeIn 0.6s ease-out;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* KPI Cards Styles */
+.kpi-card {
+    border-radius: 15px;
+    transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+    position: relative;
+    overflow: hidden;
+}
+
+.kpi-card:hover {
+    transform: translateY(-7px);
+    box-shadow: 0 12px 20px rgba(0,0,0,0.15) !important;
+}
+
+.kpi-card h2 {
+    letter-spacing: -1px;
+}
+
+/* Progress Bars */
+.progress {
+    background-color: #eee;
+    border-radius: 10px;
+}
+
+.progress-bar {
+    transition: width 1s ease-in-out;
+    border-radius: 10px;
+}
+
+/* Table refinements */
+.table-borderless tbody tr {
+    transition: background-color 0.2s;
+}
+
+.table-borderless tbody tr:hover {
+    background-color: rgba(0,0,0,0.02);
+}
+
+.border-bottom-faint {
+    border-bottom: 1px solid rgba(0,0,0,0.04);
+}
+
+/* Header Adjustments */
+.input-group-text {
+    border-right: none;
+}
+.form-select {
+    border-left: none;
+    cursor: pointer;
+}
+
+/* Print Optimization */
+@media print {
+    .btn, .input-group, .navbar {
+        display: none !important;
+    }
+    .stats-container {
+        background-color: white !important;
+        padding: 0 !important;
+    }
+    .card {
+        box-shadow: none !important;
+        border: 1px solid #eee !important;
+    }
+    .col-lg-5, .col-lg-7 {
+        width: 100% !important;
+        margin-bottom: 20px;
+    }
+}

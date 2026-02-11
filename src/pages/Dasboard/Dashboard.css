@@ -1,0 +1,61 @@
+/* --- Fichier: src/pages/Dashboard.css --- */
+
+.welcome-message {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 25px;
+}
+
+.stats-grid {
+  display: grid;
+  /* 4 colonnes de taille égale */
+  grid-template-columns: repeat(4, 1fr); 
+  gap: 20px; /* Espace entre les cartes */
+}
+
+.section-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 20px 0 15px;
+}
+
+.widgets-grid {
+  display: grid;
+  /* Une grande colonne pour la liste des véhicules, deux petites pour les widgets */
+  grid-template-columns: 2fr 1fr 1fr; 
+  gap: 20px;
+  margin-bottom: 50px; /* Espace en bas */
+}
+
+.placeholder-widget {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed #d1d5db;
+  color: #6b7280;
+  min-height: 150px;
+}
+
+/* --- Responsive pour les Cartes --- */
+@media (max-width: 1200px) {
+  .stats-grid {
+      /* Passe à 2 colonnes sur les tablettes */
+      grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .stats-grid {
+      /* Passe à 1 colonne sur les mobiles */
+      grid-template-columns: 1fr;
+  }
+  .widgets-grid {
+      /* Les widgets s'empilent sur mobile */
+      grid-template-columns: 1fr;
+  }
+}
