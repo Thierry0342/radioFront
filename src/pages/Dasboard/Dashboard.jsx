@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import StatsCard from '../../components/Dashboard/StatsCard';
 import donService from '../../services/donService';
 import typeDonService from '../../services/typeDonService';
+import TopBar from '../../components/TopBar/TopBar';
+
 import { 
     FaFilter, FaUser, FaMapMarkerAlt, FaClock, 
     FaMobileAlt, FaHandHoldingHeart, FaEllipsisH, FaSyncAlt,
     FaChevronLeft, FaChevronRight, FaCalendarAlt, FaInfoCircle, FaListUl, FaTimes,
-    FaUsers // <--- Ajout de l'icône utilisateurs
+    FaUsers 
 } from 'react-icons/fa';
 import './Dashboard.css';
 
@@ -26,8 +28,9 @@ const Dashboard = () => {
     const [endDate, setEndDate] = useState('');     
     const [totalFiltered, setTotalFiltered] = useState(0);
 
-    // --- ÉTATS UI ---
+    // --- ÉTATS UI & MODAL ---
     const [showModal, setShowModal] = useState(false);
+    const [modalSearchTerm, setModalSearchTerm] = useState(''); // <-- Nouvel état pour la recherche du modal
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(20);
 
@@ -42,15 +45,13 @@ const Dashboard = () => {
                     donService.getAll() 
                 ]);
 
-                const rawDons = donsRes.data || []; // On récupère les dons bruts ici
+                const rawDons = donsRes.data || []; 
                 
                 setDonationTypes(typesRes.data || []);
                 setAllDons(rawDons);
                 setFilteredDons(rawDons);
                 
-                // IMPORTANT : On passe rawDons directement à la fonction pour le calcul immédiat
                 organizeStats(statsRes.data || [], rawDons);
-                
                 calculateTotal(rawDons);
             } catch (err) {
                 console.error("Erreur initialisation:", err);
@@ -61,7 +62,7 @@ const Dashboard = () => {
         initDashboard();
     }, []);
 
-    // Application des filtres
+    // Application des filtres sur le tableau principal
     useEffect(() => {
         let result = [...allDons];
 
@@ -84,15 +85,14 @@ const Dashboard = () => {
         setFilteredDons(result);
         calculateTotal(result);
         setCurrentPage(1); 
-    }, [selectedTypeId, donorSearch, startDate, endDate, allDons]);
+    }, [selectedTypeId, donorSearch, startDate, endDate, allDons, donationTypes]);
 
     const calculateTotal = (list) => {
         const total = list.reduce((sum, item) => sum + parseFloat(item.montant || 0), 0);
         setTotalFiltered(total);
     };
 
-    // MODIFICATION : Ajout du paramètre currentDons pour être sûr d'avoir les données
-const organizeStats = (statsData, currentDons) => {
+    const organizeStats = (statsData, currentDons) => {
         let stats = { 
             tsotra: { total: 0, count: 0, donors: new Set() }, 
             maharitra: { total: 0, count: 0, donors: new Set() }, 
@@ -144,8 +144,6 @@ const organizeStats = (statsData, currentDons) => {
 
         setExtraStats(othersList);
 
-        // FONCTION DE RENDU DIRECTEMENT ICI (plus sûr)
-        // Utilisation des classes CSS définies plus haut
         const createSubtitle = (count, donorsCount) => (
             <div className="stats-badges-row">
                 <span className="badge-pill badge-dons">
@@ -182,7 +180,6 @@ const organizeStats = (statsData, currentDons) => {
             autres: { 
                 title: 'AUTRES DONS', 
                 value: stats.autres.total, 
-                // Celui-ci marchait déjà, on le garde
                 subtitle: (
                     <div className="stats-badges-row">
                          <span className="badge-pill badge-more" style={{background:'#f3e5f5', color:'#7b1fa2', cursor:'pointer'}}>
@@ -209,6 +206,17 @@ const organizeStats = (statsData, currentDons) => {
     const currentItems = filteredDons.slice(indexOfFirstItem, indexOfLastItem);
     const totalPages = Math.ceil(filteredDons.length / itemsPerPage);
 
+    // --- FILTRAGE POUR LE MODAL ---
+    const filteredExtraStats = extraStats.filter(item => 
+        item.title.toLowerCase().includes(modalSearchTerm.toLowerCase())
+    );
+
+    // Fonction pour fermer le modal et réinitialiser la recherche
+    const handleCloseModal = () => {
+        setShowModal(false);
+        setModalSearchTerm('');
+    };
+
     return (
         <div className="dashboard-container p-4">
             <h2 className="welcome-message mb-4">Tableau de Bord 👋</h2>
@@ -233,11 +241,24 @@ const organizeStats = (statsData, currentDons) => {
                     <div className="custom-modal-content">
                         <div className="modal-header-custom">
                             <h5><FaInfoCircle className="me-2 text-purple"/> Détails des autres collectes</h5>
-                            <button className="close-btn" onClick={() => setShowModal(false)}><FaTimes/></button>
+                            <button className="close-btn" onClick={handleCloseModal}><FaTimes/></button>
                         </div>
                         <div className="modal-body-custom">
+                            
+                            {/* NOUVELLE BARRE DE RECHERCHE DU MODAL */}
+                            <div className="mb-4">
+                                <input 
+                                    type="text" 
+                                    className="form-control form-control-sm" 
+                                    placeholder="Rechercher une collecte (ex: Construction...)" 
+                                    value={modalSearchTerm}
+                                    onChange={(e) => setModalSearchTerm(e.target.value)}
+                                    autoFocus
+                                />
+                            </div>
+
                             <div className="row g-3">
-                                {extraStats.length > 0 ? extraStats.map((item, idx) => {
+                                {filteredExtraStats.length > 0 ? filteredExtraStats.map((item, idx) => {
                                     const colors = ['purple', 'pink', 'teal', 'indigo', 'orange', 'cyan'];
                                     const colorClass = colors[idx % colors.length];
                                     return (
@@ -245,7 +266,6 @@ const organizeStats = (statsData, currentDons) => {
                                             <div className={`detail-card border-${colorClass}`}>
                                                 <div className="d-flex justify-content-between align-items-start mb-2">
                                                     <span className={`detail-title text-${colorClass}`}>{item.title}</span>
-                                                    {/* Badge Donateurs dans la Modal */}
                                                     <span className={`modal-donor-badge bg-${colorClass}-light text-${colorClass}`}>
                                                         <FaUsers className="me-1"/>{item.donorCount}
                                                     </span>
@@ -257,28 +277,45 @@ const organizeStats = (statsData, currentDons) => {
                                             </div>
                                         </div>
                                     );
-                                }) : <p className="text-center w-100 py-4">Aucun autre type de don.</p>}
+                                }) : (
+                                    <p className="text-center w-100 py-4 text-muted">
+                                        {extraStats.length === 0 ? "Aucun autre type de don." : "Aucun résultat trouvé pour votre recherche."}
+                                    </p>
+                                )}
                             </div>
                         </div>
-                        <div className="text-end mt-4">
-                            <button className="btn btn-secondary btn-sm px-4" onClick={() => setShowModal(false)}>Fermer</button>
+                        <div className="text-end mt-4 pt-3 border-top">
+                            <button className="btn btn-secondary btn-sm px-4" onClick={handleCloseModal}>Fermer</button>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* --- TABLEAU ET FILTRES (Reste du code inchangé) --- */}
+            {/* --- TABLEAU ET FILTRES --- */}
             <div className="card shadow-sm border-0 p-4 bg-white">
                 <div className="row g-2 align-items-center mb-4">
                     <div className="col-md-12 mb-2">
                         <h3 className="section-title fs-5 fw-bold"><FaListUl className="me-2 text-primary" /> Historique des Dons</h3>
                     </div>
+                    
                     <div className="col-md-2">
-                        <select className="form-select form-select-sm" value={selectedTypeId} onChange={(e) => setSelectedTypeId(e.target.value)}>
-                            <option value="">-- Types --</option>
-                            {donationTypes.map(t => <option key={t.idType} value={t.idType}>{t.libelle}</option>)}
-                        </select>
+                        <input 
+                            list="typesDonData" 
+                            className="form-control form-control-sm" 
+                            placeholder="Chercher type..." 
+                            value={selectedTypeId ? donationTypes.find(t => t.idType === selectedTypeId)?.libelle || '' : ''}
+                            onChange={(e) => {
+                                const type = donationTypes.find(t => t.libelle === e.target.value);
+                                setSelectedTypeId(type ? type.idType : '');
+                            }}
+                        />
+                        <datalist id="typesDonData">
+                            {donationTypes.map(t => (
+                                <option key={t.idType} value={t.libelle} />
+                            ))}
+                        </datalist>
                     </div>
+
                     <div className="col-md-2">
                         <input type="text" className="form-control form-control-sm" placeholder="Nom..." value={donorSearch} onChange={(e) => setDonorSearch(e.target.value)} />
                     </div>
@@ -297,13 +334,12 @@ const organizeStats = (statsData, currentDons) => {
                     </div>
                     <div className="col-md-3 d-flex gap-2">
                         <div className="badge bg-primary fs-6 p-2 flex-grow-1 d-flex align-items-center justify-content-center">Total: {formatMoney(totalFiltered)}</div>
-                        <button className="btn btn-sm btn-outline-secondary" onClick={resetFilters}><FaSyncAlt /></button>
+                        <button className="btn btn-sm btn-outline-secondary" onClick={resetFilters} title="Réinitialiser les filtres"><FaSyncAlt /></button>
                     </div>
                 </div>
 
                 <div className="table-responsive border rounded">
                     <table className="table table-hover align-middle mb-0">
-                        {/* CHANGEMENT ICI : On remplace table-light par custom-thead */}
                         <thead className="custom-thead text-uppercase small fw-bold">
                             <tr>
                                 <th className="py-3 px-4">Donateur</th>
@@ -338,7 +374,7 @@ const organizeStats = (statsData, currentDons) => {
                                 <button className="page-link" onClick={() => setCurrentPage(c => c - 1)}><FaChevronLeft/></button>
                             </li>
                             <li className="page-item active"><span className="page-link">{currentPage} / {totalPages || 1}</span></li>
-                            <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                            <li className={`page-item ${currentPage === totalPages || totalPages === 0 ? 'disabled' : ''}`}>
                                 <button className="page-link" onClick={() => setCurrentPage(c => c + 1)}><FaChevronRight/></button>
                             </li>
                         </ul>

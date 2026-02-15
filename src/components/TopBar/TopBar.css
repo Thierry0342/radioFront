@@ -106,3 +106,409 @@
         display: none; /* Masquer l'email pour économiser de l'espace */
     }
 }
+.notification-wrapper {
+    position: relative;
+    cursor: pointer;
+}
+
+/* Badge rouge sur la cloche */
+.badge-count {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: #ff4757;
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 2px 5px;
+    border-radius: 50%;
+    border: 2px solid white;
+}
+
+/* Le menu déroulant */
+.notif-dropdown {
+    position: absolute;
+    top: 45px;
+    right: 0;
+    width: 320px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    z-index: 1000;
+    border: 1px solid #eee;
+    overflow: hidden;
+}
+
+.notif-header {
+    padding: 15px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+}
+
+.mark-read-btn {
+    background: none;
+    border: none;
+    color: #4e73df;
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.notif-body {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.notif-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    border-bottom: 1px solid #f1f1f1;
+    transition: background 0.2s;
+}
+
+.notif-item:hover {
+    background: #f8f9fc;
+}
+
+.notif-icon-circle {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+/* Couleurs selon le type */
+.notif-icon-circle.success { background: #e3f2fd; color: #0d6efd; }
+.notif-icon-circle.warning { background: #fff3e0; color: #ff9800; }
+.notif-icon-circle.info { background: #f3e5f5; color: #9c27b0; }
+
+.notif-text {
+    margin: 0;
+    font-size: 13px;
+    color: #333;
+    line-height: 1.4;
+}
+
+.notif-time {
+    font-size: 11px;
+    color: #999;
+}
+
+.notif-footer {
+    padding: 10px;
+    text-align: center;
+    font-size: 12px;
+    color: #666;
+    background: #f8f9fa;
+    cursor: pointer;
+}
+/* Point rouge de notification */
+.notif-dot {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    color: #ff4757;
+    font-size: 8px;
+    border: 2px solid white;
+    border-radius: 50%;
+}
+
+/* Le conteneur du menu */
+.notif-dropdown {
+    position: absolute;
+    top: 35px;
+    right: 0;
+    width: 280px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    z-index: 1000;
+    border: 1px solid #eee;
+}
+
+.notif-header {
+    padding: 12px;
+    font-weight: bold;
+    font-size: 14px;
+    border-bottom: 1px solid #eee;
+    color: #2c3e50;
+}
+
+.notif-item {
+    padding: 12px;
+    border-bottom: 1px solid #f8f9fa;
+    transition: background 0.2s;
+}
+
+.notif-item:hover {
+    background: #f8f9ff;
+}
+
+.notif-msg {
+    display: block;
+    font-size: 13px;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.notif-category {
+    font-size: 10px;
+    background: #eef2ff;
+    color: #4e73df;
+    padding: 2px 6px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+.notif-empty {
+    padding: 20px;
+    text-align: center;
+    font-size: 13px;
+    color: #999;
+}
+.topbar {
+    height: 70px;
+    background-color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 25px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.topbar-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #333;
+    margin: 0;
+}
+
+.topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+}
+
+/* Recherche */
+.search-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-input {
+    background-color: #f8f9fc;
+    border: 1px solid #e3e6f0;
+    border-radius: 20px;
+    padding: 8px 15px 8px 35px;
+    font-size: 0.9rem;
+    outline: none;
+    width: 200px;
+    transition: width 0.3s;
+}
+
+.search-input:focus {
+    width: 250px;
+    border-color: #4e73df;
+}
+
+.search-icon {
+    position: absolute;
+    left: 12px;
+    color: #b7b9cc;
+}
+
+/* Icones */
+.icon-group {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.notification-container {
+    position: relative;
+}
+
+.topbar-icon {
+    font-size: 1.2rem;
+    color: #d1d3e2;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.topbar-icon:hover {
+    color: #4e73df;
+}
+
+/* BADGE */
+.notif-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background-color: #e74a3b;
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+}
+
+/* DROPDOWN */
+.notif-dropdown {
+    position: absolute;
+    top: 40px;
+    right: 0;
+    width: 300px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.15);
+    overflow: hidden;
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.notif-header {
+    background-color: #4e73df;
+    color: white;
+    padding: 12px;
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
+.notif-item {
+    padding: 12px;
+    border-bottom: 1px solid #f8f9fc;
+    transition: background 0.2s;
+    cursor: pointer;
+}
+
+.notif-item:hover {
+    background-color: #f8f9fc;
+}
+
+.notif-msg {
+    display: block;
+    font-size: 0.85rem;
+    color: #4e4e4e;
+    margin-bottom: 4px;
+}
+
+.notif-category {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: #4e73df;
+    font-weight: bold;
+}
+
+.notif-footer {
+    padding: 10px;
+    text-align: center;
+    font-size: 0.8rem;
+    color: #858796;
+    cursor: pointer;
+}
+
+/* Profile */
+.admin-profile {
+    display: flex;
+    align-items: center;
+    border-left: 1px solid #e3e6f0;
+    padding-left: 20px;
+}
+
+.admin-name {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #5a5c69;
+}
+
+.admin-email {
+    font-size: 0.75rem;
+    color: #b7b9cc;
+}
+
+.admin-avatar-icon {
+    font-size: 2rem;
+    color: #d1d3e2;
+    margin-left: 10px;
+}
+.notif-footer {
+    padding: 12px;
+    text-align: center;
+    font-size: 0.85rem;
+    color: #4e73df; /* Couleur bleue pour simuler un lien */
+    background-color: #f8f9fc;
+    border-top: 1px solid #e3e6f0;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.notif-footer:hover {
+    background-color: #4e73df;
+    color: white; /* Le fond devient bleu et le texte blanc au survol */
+    text-decoration: underline;
+}
+/* --- DANS TopBar.css --- */
+.notif-badge {
+    position: absolute;
+    top: -5px; right: -5px;
+    background: #e74a3b; color: white;
+    font-size: 0.7rem; font-weight: bold;
+    padding: 2px 6px; border-radius: 10px;
+    border: 2px solid white;
+}
+.notif-footer {
+    text-align: center; padding: 10px;
+    background: #f8f9fc; color: #4e73df;
+    font-weight: bold; cursor: pointer;
+    border-top: 1px solid #e3e6f0;
+}
+.notif-footer:hover {
+    background: #eaecf4; text-decoration: underline;
+}
+
+/* --- DANS DonHistory.css --- */
+/* Style pour la ligne surlignée */
+.row-highlight-new {
+    background-color: #e8f0fe !important; /* Bleu très clair */
+    animation: fadeHighlight 4s forwards; /* Optionnel : disparaît doucement */
+    border-left: 4px solid #4e73df;
+}
+
+/* Badge "NOUVEAU" dans le tableau */
+.new-tag {
+    background-color: #4e73df;
+    color: white;
+    font-size: 0.6rem;
+    font-weight: 800;
+    padding: 2px 5px;
+    border-radius: 4px;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+.history-table { width: 100%; border-collapse: collapse; }
+.history-table th { background: #4e73df; color: white; padding: 12px; }
+.history-table td { padding: 12px; border-bottom: 1px solid #ddd; }
+.amount-cell { font-weight: bold; color: #2e59d9; }

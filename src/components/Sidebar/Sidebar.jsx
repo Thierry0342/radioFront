@@ -11,9 +11,9 @@ const navItems = [
     { name: 'DASHBOARD', icon: <FaTruck />, path: '/dashboard' },
     { name: 'DON', icon: <FaShoppingCart />, path: '/saisie-don' },
     { name: 'DONNATEURS', icon: <FaWarehouse />, path: '/donateur' },
-    { name: 'TYPE DON', icon: <FaWarehouse />, path: '/warehouse' },
+    { name: 'TYPE DON', icon: <FaWarehouse />, path: '/type-don' },
     { name: 'STAT', icon: <FaChartBar />, path: '/statistique' },
-    { name: 'REPORTS', icon: <FaFileAlt />, path: '/reports' },
+    { name: 'REPORTS', icon: <FaFileAlt />, path: '/Report' },
 ];
 
 const profile = {
@@ -68,9 +68,9 @@ const Sidebar = () => {
             <nav className="sidebar-widgets">
                 {!isCollapsed && <p className="nav-title">COMPONENTS</p>}
                 {/* Pour les liens simples, utilisez aussi NavLink ou Link */}
-                <NavLink to="/calendar" className="nav-item">
+                <NavLink to="/QuickSummary" className="nav-item">
                     <span className="nav-icon"><FaCalendarAlt /></span> 
-                    {!isCollapsed && <span className="link-text">Calendar</span>}
+                    {!isCollapsed && <span className="link-text">Resumé rapide</span>}
                 </NavLink>
                 <NavLink to="/mail" className="nav-item">
                     <span className="nav-icon"><FaEnvelope /></span> 

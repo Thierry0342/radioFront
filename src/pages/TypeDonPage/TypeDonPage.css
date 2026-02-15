@@ -1,0 +1,137 @@
+.type-don-container {
+    padding: 40px;
+    background-color: #f1f5f9;
+    min-height: 100vh;
+}
+
+.type-don-content {
+    display: grid;
+    grid-template-columns: 350px 1fr; /* Formulaire à gauche, Liste à droite */
+    gap: 30px;
+}
+
+.config-card {
+    background: white;
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    border: 1px solid #e2e8f0;
+}
+
+.config-card h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #1e293b;
+}
+
+/* Formulaire */
+.form-group-ui {
+    margin-bottom: 15px;
+}
+
+.form-group-ui label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #64748b;
+    margin-bottom: 5px;
+}
+
+.form-group-ui input, 
+.form-group-ui textarea {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    font-family: inherit;
+}
+
+.btn-save {
+    width: 100%;
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-save:hover { background: var(--primary-dark); }
+
+/* Liste des items */
+.types-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.type-item-ui {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    transition: 0.2s;
+}
+
+.type-item-ui:hover {
+    border-color: var(--primary);
+    background: white;
+}
+
+.type-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.check-icon { color: #10b981; }
+
+.type-info strong { color: #1e293b; font-size: 1rem; }
+.type-info p { margin: 0; font-size: 0.8rem; color: #64748b; }
+
+.type-actions { display: flex; gap: 8px; }
+
+.btn-edit, .btn-delete {
+    width: 35px; height: 35px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s;
+}
+
+.btn-edit { background: #e0f2fe; color: #0369a1; }
+.btn-delete { background: #fee2e2; color: #ef4444; }
+
+.btn-edit:hover { background: #0369a1; color: white; }
+.btn-delete:hover { background: #ef4444; color: white; }
+.loader-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px;
+    color: var(--text-muted);
+    gap: 10px;
+}
+
+.spin {
+    animation: rotate 1s linear infinite;
+    font-size: 2rem;
+    color: var(--primary);
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
