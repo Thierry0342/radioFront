@@ -8,19 +8,20 @@ import {
     FaFilter, FaUser, FaMapMarkerAlt, FaClock, 
     FaMobileAlt, FaHandHoldingHeart, FaEllipsisH, FaSyncAlt,
     FaChevronLeft, FaChevronRight, FaCalendarAlt, FaInfoCircle, FaListUl, FaTimes,
-    FaUsers 
+    FaUsers, FaFilePdf 
 } from 'react-icons/fa';
 import './Dashboard.css';
 
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+
 const Dashboard = () => {
-    // --- ÉTATS DES DONNÉES ---
     const [mainStats, setMainStats] = useState({ tsotra: null, maharitra: null, mobile: null, autres: null });
     const [extraStats, setExtraStats] = useState([]); 
     const [loading, setLoading] = useState(true);
     const [allDons, setAllDons] = useState([]);          
     const [filteredDons, setFilteredDons] = useState([]); 
     
-    // --- ÉTATS DES FILTRES ---
     const [donationTypes, setDonationTypes] = useState([]); 
     const [selectedTypeId, setSelectedTypeId] = useState('');
     const [donorSearch, setDonorSearch] = useState('');      
@@ -28,13 +29,27 @@ const Dashboard = () => {
     const [endDate, setEndDate] = useState('');     
     const [totalFiltered, setTotalFiltered] = useState(0);
 
-    // --- ÉTATS UI & MODAL ---
     const [showModal, setShowModal] = useState(false);
-    const [modalSearchTerm, setModalSearchTerm] = useState(''); // <-- Nouvel état pour la recherche du modal
+    const [modalSearchTerm, setModalSearchTerm] = useState(''); 
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(20);
 
-    // Initialisation des données
+    // 🎯 LA SOLUTION EST ICI : Cette fonction nettoie les erreurs de frappe (espaces, slash, lettres...)
+    const parseMontant = (val) => {
+        if (!val) return 0;
+        // 1. Convertir en texte
+        let cleanVal = String(val);
+        // 2. Supprimer les slashs (/), les espaces, les apostrophes, et les lettres
+        cleanVal = cleanVal.replace(/[\s/'a-zA-Z]/g, '');
+        // 3. Remplacer une éventuelle virgule par un point
+        cleanVal = cleanVal.replace(',', '.');
+        // 4. Convertir en nombre pur
+        return parseFloat(cleanVal) || 0;
+    };
+
+    // 🎯 On utilise la fonction de nettoyage ici
+    const formatMoney = (val) => `${parseMontant(val).toLocaleString('fr-FR')} Ar`;
+
     useEffect(() => {
         const initDashboard = async () => {
             try {
@@ -62,7 +77,6 @@ const Dashboard = () => {
         initDashboard();
     }, []);
 
-    // Application des filtres sur le tableau principal
     useEffect(() => {
         let result = [...allDons];
 
@@ -88,7 +102,8 @@ const Dashboard = () => {
     }, [selectedTypeId, donorSearch, startDate, endDate, allDons, donationTypes]);
 
     const calculateTotal = (list) => {
-        const total = list.reduce((sum, item) => sum + parseFloat(item.montant || 0), 0);
+        // 🎯 On nettoie le montant de chaque ligne avant de faire la somme
+        const total = list.reduce((sum, item) => sum + parseMontant(item.montant), 0);
         setTotalFiltered(total);
     };
 
@@ -102,7 +117,6 @@ const Dashboard = () => {
         
         let donorsBySpecificType = {};
 
-        // 1. Calcul des donateurs uniques
         currentDons.forEach(don => {
             const lib = (don.libelleType || "").toUpperCase();
             const nom = don.nomDonateur;
@@ -120,10 +134,10 @@ const Dashboard = () => {
 
         let othersList = [];
         
-        // 2. Traitement des montants
         statsData.forEach(stat => {
             const lib = (stat.title || "").toUpperCase();
-            const m = parseFloat(stat.totalMontant || 0);
+            // 🎯 On sécurise les statistiques qui viennent du backend
+            const m = parseMontant(stat.totalMontant);
             const c = parseInt(stat.totalDons || 0);
 
             if (lib.includes('MOBILE') || lib.includes('MVOLA') || lib.includes('ORANGE')) { 
@@ -146,9 +160,7 @@ const Dashboard = () => {
 
         const createSubtitle = (count, donorsCount) => (
             <div className="stats-badges-row">
-                <span className="badge-pill badge-dons">
-                    {count} dons
-                </span>
+                <span className="badge-pill badge-dons">{count} dons</span>
                 <span className="badge-pill badge-donateurs">
                     <FaUsers className="icon-tiny"/> {donorsCount} donateurs
                 </span>
@@ -156,39 +168,16 @@ const Dashboard = () => {
         );
 
         setMainStats({
-            tsotra: { 
-                title: 'TOTAL TSOTRA', 
-                value: stats.tsotra.total, 
-                subtitle: createSubtitle(stats.tsotra.count, stats.tsotra.donors.size),
-                icon: <FaHandHoldingHeart />, 
-                theme: 'blue' 
-            },
-            maharitra: { 
-                title: 'TOTAL MAHARITRA', 
-                value: stats.maharitra.total, 
-                subtitle: createSubtitle(stats.maharitra.count, stats.maharitra.donors.size),
-                icon: <FaClock />, 
-                theme: 'green' 
-            },
-            mobile: { 
-                title: 'MOBILE MONEY', 
-                value: stats.mobile.total, 
-                subtitle: createSubtitle(stats.mobile.count, stats.mobile.donors.size), 
-                icon: <FaMobileAlt />, 
-                theme: 'orange' 
-            },
-            autres: { 
-                title: 'AUTRES DONS', 
-                value: stats.autres.total, 
-                subtitle: (
+            tsotra: { title: 'TOTAL TSOTRA', value: stats.tsotra.total, subtitle: createSubtitle(stats.tsotra.count, stats.tsotra.donors.size), icon: <FaHandHoldingHeart />, theme: 'blue' },
+            maharitra: { title: 'TOTAL MAHARITRA', value: stats.maharitra.total, subtitle: createSubtitle(stats.maharitra.count, stats.maharitra.donors.size), icon: <FaClock />, theme: 'green' },
+            mobile: { title: 'MOBILE MONEY', value: stats.mobile.total, subtitle: createSubtitle(stats.mobile.count, stats.mobile.donors.size), icon: <FaMobileAlt />, theme: 'orange' },
+            autres: { title: 'AUTRES DONS', value: stats.autres.total, subtitle: (
                     <div className="stats-badges-row">
                          <span className="badge-pill badge-more" style={{background:'#f3e5f5', color:'#7b1fa2', cursor:'pointer'}}>
                             Voir détails <FaChevronRight style={{fontSize: 10}}/>
                          </span>
                     </div>
-                ),
-                icon: <FaEllipsisH />, 
-                theme: 'purple' 
+                ), icon: <FaEllipsisH />, theme: 'purple' 
             }
         });
     };
@@ -198,30 +187,103 @@ const Dashboard = () => {
         setCurrentPage(1);
     };
 
-    const formatMoney = (val) => `${parseFloat(val || 0).toLocaleString()} Ar`;
-
-    // Pagination
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentItems = filteredDons.slice(indexOfFirstItem, indexOfLastItem);
     const totalPages = Math.ceil(filteredDons.length / itemsPerPage);
 
-    // --- FILTRAGE POUR LE MODAL ---
-    const filteredExtraStats = extraStats.filter(item => 
-        item.title.toLowerCase().includes(modalSearchTerm.toLowerCase())
-    );
-
-    // Fonction pour fermer le modal et réinitialiser la recherche
     const handleCloseModal = () => {
         setShowModal(false);
         setModalSearchTerm('');
     };
 
+    const exportToPDF = () => {
+        const doc = new jsPDF();
+        
+        const formatForPDF = (num) => {
+            const cleaned = parseMontant(num);
+            return new Intl.NumberFormat('fr-FR', {
+                useGrouping: true,
+            }).format(cleaned).replace(/\s/g, ' ') + " Ar";
+        };
+    
+        doc.setFontSize(18);
+        doc.setTextColor(124, 58, 237);
+        doc.text("RAPPORT RÉSUMÉ DES DONS", 14, 20);
+        
+        doc.setFontSize(10);
+        doc.setTextColor(100);
+        let filterText = "Période : " + (startDate ? new Date(startDate).toLocaleDateString() : "Début") + " au " + (endDate ? new Date(endDate).toLocaleDateString() : "Aujourd'hui");
+        if (selectedTypeId) {
+            const typeName = donationTypes.find(t => t.idType == selectedTypeId)?.libelle;
+            filterText += ` | Type : ${typeName}`;
+        }
+        doc.text(filterText, 14, 28);
+    
+        // --- LOGIQUE CALCUL RÉSUMÉ (AVEC NOMBRE DE DONATEURS) ---
+        const typeStats = {};
+        filteredDons.forEach(d => {
+            const t = d.libelleType || 'Autre';
+            if (!typeStats[t]) {
+                typeStats[t] = { total: 0, donateurs: new Set() };
+            }
+            typeStats[t].total += parseMontant(d.montant);
+            // On utilise un Set pour compter les donateurs uniques (par leur nom ou ID)
+            typeStats[t].donateurs.add(d.nomDonateur); 
+        });
+        
+        const summaryBody = Object.keys(typeStats).map(k => [
+            k, 
+            typeStats[k].donateurs.size + " Pers.", // Nombre de donateurs uniques
+            formatForPDF(typeStats[k].total) 
+        ]);
+        
+        // --- TABLEAU RÉSUMÉ PAR TYPE ---
+        autoTable(doc, {
+            startY: 35,
+            head: [['Type de Don', 'Donateurs', 'Total']],
+            body: summaryBody,
+            theme: 'grid',
+            headStyles: { fillColor: [124, 58, 237] },
+            styles: { fontSize: 10 },
+            margin: { left: 14, right: 14 }
+        });
+    
+        // --- TABLEAU DÉTAILLÉ AVEC NUMÉRO D'ORDRE ---
+        const tableBody = filteredDons.map((item, index) => [
+            index + 1, // 🎯 Numéro d'ordre (index + 1)
+            item.nomDonateur,
+            item.adresse || '---',
+            item.libelleType,
+            new Date(item.dateDon).toLocaleDateString(),
+            formatForPDF(item.montant)
+        ]);
+    
+        autoTable(doc, {
+            startY: doc.lastAutoTable.finalY + 15,
+            // Ajout de '#' dans l'en-tête
+            head: [['#', 'Donateur', 'Localisation', 'Type', 'Date', 'Montant']], 
+            body: tableBody,
+            theme: 'striped',
+            headStyles: { fillColor: [41, 128, 185] },
+            styles: { fontSize: 8 }, // Légère réduction pour faire tenir la nouvelle colonne
+            columnStyles: {
+                0: { cellWidth: 10 }, // Largeur fixe pour la colonne #
+            }
+        });
+    
+        // --- TOTAL GÉNÉRAL ---
+        doc.setFontSize(14);
+        doc.setTextColor(220, 38, 38);
+        const finalTotalText = `Total Général : ${formatForPDF(totalFiltered)}`;
+        doc.text(finalTotalText, 14, doc.lastAutoTable.finalY + 15);
+    
+        doc.save(`Rapport_Dashboard_${new Date().toISOString().split('T')[0]}.pdf`);
+    };
     return (
         <div className="dashboard-container p-4">
             <h2 className="welcome-message mb-4">Tableau de Bord 👋</h2>
 
-            {/* --- CARTES STATS --- */}
             <div className="stats-grid mb-4">
                 {!loading && mainStats.tsotra && (
                     <>
@@ -235,7 +297,6 @@ const Dashboard = () => {
                 )}
             </div>
 
-            {/* --- MODAL PERSONNALISÉE --- */}
             {showModal && (
                 <div className="custom-modal-overlay">
                     <div className="custom-modal-content">
@@ -244,21 +305,19 @@ const Dashboard = () => {
                             <button className="close-btn" onClick={handleCloseModal}><FaTimes/></button>
                         </div>
                         <div className="modal-body-custom">
-                            
-                            {/* NOUVELLE BARRE DE RECHERCHE DU MODAL */}
                             <div className="mb-4">
                                 <input 
                                     type="text" 
                                     className="form-control form-control-sm" 
-                                    placeholder="Rechercher une collecte (ex: Construction...)" 
+                                    placeholder="Rechercher une collecte..." 
                                     value={modalSearchTerm}
                                     onChange={(e) => setModalSearchTerm(e.target.value)}
                                     autoFocus
                                 />
                             </div>
-
                             <div className="row g-3">
-                                {filteredExtraStats.length > 0 ? filteredExtraStats.map((item, idx) => {
+                                {extraStats.filter(item => item.title.toLowerCase().includes(modalSearchTerm.toLowerCase())).length > 0 ? 
+                                    extraStats.filter(item => item.title.toLowerCase().includes(modalSearchTerm.toLowerCase())).map((item, idx) => {
                                     const colors = ['purple', 'pink', 'teal', 'indigo', 'orange', 'cyan'];
                                     const colorClass = colors[idx % colors.length];
                                     return (
@@ -279,7 +338,7 @@ const Dashboard = () => {
                                     );
                                 }) : (
                                     <p className="text-center w-100 py-4 text-muted">
-                                        {extraStats.length === 0 ? "Aucun autre type de don." : "Aucun résultat trouvé pour votre recherche."}
+                                        Aucun résultat trouvé.
                                     </p>
                                 )}
                             </div>
@@ -291,7 +350,6 @@ const Dashboard = () => {
                 </div>
             )}
 
-            {/* --- TABLEAU ET FILTRES --- */}
             <div className="card shadow-sm border-0 p-4 bg-white">
                 <div className="row g-2 align-items-center mb-4">
                     <div className="col-md-12 mb-2">
@@ -325,16 +383,17 @@ const Dashboard = () => {
                     <div className="col-md-2">
                         <input type="date" className="form-control form-control-sm" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
                     </div>
-                    <div className="col-md-1">
-                        <select className="form-select form-select-sm" value={itemsPerPage} onChange={(e) => setItemsPerPage(Number(e.target.value))}>
-                            <option value={10}>10</option>
-                            <option value={20}>20</option>
-                            <option value={50}>50</option>
-                        </select>
-                    </div>
-                    <div className="col-md-3 d-flex gap-2">
-                        <div className="badge bg-primary fs-6 p-2 flex-grow-1 d-flex align-items-center justify-content-center">Total: {formatMoney(totalFiltered)}</div>
-                        <button className="btn btn-sm btn-outline-secondary" onClick={resetFilters} title="Réinitialiser les filtres"><FaSyncAlt /></button>
+                    
+                    <div className="col-md-4 d-flex gap-2">
+                        <div className="badge bg-primary fs-6 px-3 flex-grow-1 d-flex align-items-center justify-content-center">
+                            Total: {formatMoney(totalFiltered)}
+                        </div>
+                        <button className="btn btn-sm btn-danger text-white d-flex align-items-center gap-1" onClick={exportToPDF} title="Exporter en PDF">
+                            <FaFilePdf /> PDF
+                        </button>
+                        <button className="btn btn-sm btn-outline-secondary" onClick={resetFilters} title="Réinitialiser les filtres">
+                            <FaSyncAlt />
+                        </button>
                     </div>
                 </div>
 
@@ -365,9 +424,15 @@ const Dashboard = () => {
                     </table>
                 </div>
 
-                {/* PAGINATION */}
                 <div className="d-flex justify-content-between align-items-center mt-4">
-                    <div className="text-muted small">Total: <b>{filteredDons.length}</b> dons</div>
+                    <div className="d-flex align-items-center gap-3">
+                        <div className="text-muted small">Total: <b>{filteredDons.length}</b> dons</div>
+                        <select className="form-select form-select-sm w-auto" value={itemsPerPage} onChange={(e) => {setItemsPerPage(Number(e.target.value)); setCurrentPage(1);}}>
+                            <option value={10}>10 / page</option>
+                            <option value={20}>20 / page</option>
+                            <option value={50}>50 / page</option>
+                        </select>
+                    </div>
                     <nav>
                         <ul className="pagination pagination-sm mb-0">
                             <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>

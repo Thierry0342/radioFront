@@ -9,6 +9,7 @@ import DonHistory from "./pages/DonHistory/DonHistory";
 import TypeDonPage from "./pages/TypeDonPage/TypeDonPage"; 
 import Report from "./pages/ReportPage/ReportPage"; 
 import QuickSummary from "./pages/QuickSummary/QuickSummary"; 
+import Maharitra from "./pages/Maharitra/Maharitra"; 
 
 
 
@@ -36,6 +37,7 @@ function App() {
             <Route path="historique" element={<DonHistory />} />
             <Route path="Report" element={<Report />} />
             <Route path="QuickSummary" element={<QuickSummary />} />
+            <Route path="Maharitra" element={<Maharitra />} />
             
         </Route>
 

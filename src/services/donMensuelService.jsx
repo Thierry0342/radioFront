@@ -31,6 +31,13 @@ const donMensuelService = {
     // Nous allons configurer l'endpoint /api/don-mensuel/:idMensuel en DELETE côté backend
     return axiosInstance.delete(`${API_URL}/api/don/mensuel/${idMensuel}`);
   },
+  getAllMaharitraStats(annee) {
+    // Cette fonction appelle la nouvelle route /all-stats
+    return axiosInstance.get(`${API_URL}/api/don-mensuel/all-stats`, {
+      params: { annee }
+    });
+  },
 };
+
 
 export default donMensuelService;

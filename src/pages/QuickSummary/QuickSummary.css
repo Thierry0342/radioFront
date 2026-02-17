@@ -118,7 +118,7 @@
 .type-card:hover { transform: translateY(-5px); border-color: #7c3aed; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
 
 .type-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-.type-name { font-weight: 800; color: #1e293b; font-size: 1rem; }
+.type-name { font-weight: 800; color: #1e293b; font-size: 1rem; } 
 .type-icon { color: #cbd5e1; }
 
 .type-total { font-size: 1.4rem; font-weight: 800; color: #7c3aed; margin-bottom: 5px; }

@@ -3,17 +3,27 @@ import './Sidebar.css';
 // 1. Importer NavLink
 import { NavLink } from 'react-router-dom'; 
 import { 
-    FaTruck, FaShoppingCart, FaWarehouse, FaFileAlt, FaChartBar, FaCalendarAlt, FaEnvelope,
-    FaChevronLeft, FaChevronRight 
+    FaThLarge,           // Pour Dashboard
+    FaHandHoldingHeart, // Pour le Don (plus chaleureux)
+    FaUsers,            // Pour les Donateurs
+    FaTags,             // Pour les Types de Don
+    FaChartLine,        // Pour les Statistiques
+    FaFileInvoice    ,   // Pour les Rapports/Reports
+    FaChevronRight,
+    FaChevronLeft,
+    FaCalendarAlt,
+    FaMoneyBill
+
+
 } from 'react-icons/fa';
 
 const navItems = [
-    { name: 'DASHBOARD', icon: <FaTruck />, path: '/dashboard' },
-    { name: 'DON', icon: <FaShoppingCart />, path: '/saisie-don' },
-    { name: 'DONNATEURS', icon: <FaWarehouse />, path: '/donateur' },
-    { name: 'TYPE DON', icon: <FaWarehouse />, path: '/type-don' },
-    { name: 'STAT', icon: <FaChartBar />, path: '/statistique' },
-    { name: 'REPORTS', icon: <FaFileAlt />, path: '/Report' },
+    { name: 'DASHBOARD', icon: <FaThLarge />, path: '/dashboard' },
+    { name: 'DON', icon: <FaHandHoldingHeart />, path: '/saisie-don' },
+    { name: 'DONNATEURS', icon: <FaUsers />, path: '/donateur' },
+    { name: 'TYPE DON', icon: <FaTags />, path: '/type-don' },
+    { name: 'STAT', icon: <FaChartLine />, path: '/statistique' },
+    { name: 'REPORTS', icon: <FaFileInvoice />, path: '/Report' },
 ];
 
 const profile = {
@@ -72,9 +82,9 @@ const Sidebar = () => {
                     <span className="nav-icon"><FaCalendarAlt /></span> 
                     {!isCollapsed && <span className="link-text">Resumé rapide</span>}
                 </NavLink>
-                <NavLink to="/mail" className="nav-item">
-                    <span className="nav-icon"><FaEnvelope /></span> 
-                    {!isCollapsed && <span className="link-text">Mail</span>}
+                <NavLink to="/Maharitra" className="nav-item">
+                    <span className="nav-icon"><FaMoneyBill /></span> 
+                    {!isCollapsed && <span className="link-text">Tolotanana Maharitra</span>}
                 </NavLink>
             </nav>
         </div>

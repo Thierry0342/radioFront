@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import donService from '../../services/donService';
+import personneService from '../../services/personeService';
 import { 
     FaUser, FaSearch, FaEnvelope, FaMapMarkerAlt, 
-    FaInfoCircle, FaTimes, FaCrown, FaGem, FaMedal 
+    FaInfoCircle, FaTimes, FaCrown, FaGem, FaMedal, FaTrash 
 } from 'react-icons/fa';
+import Swal from 'sweetalert2'; // Importation de SweetAlert2
 import './DonorsPage.css';
 
 const DonorsPage = () => {
@@ -16,6 +18,15 @@ const DonorsPage = () => {
     const [selectedDonor, setSelectedDonor] = useState(null);
     const [donorHistory, setDonorHistory] = useState([]);
     const [loadingHistory, setLoadingHistory] = useState(false);
+
+    // Configuration du Toast SweetAlert2
+    const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+    });
 
     useEffect(() => {
         fetchDonors();
@@ -31,6 +42,45 @@ const DonorsPage = () => {
             console.error("Erreur:", error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    // --- FONCTION SUPPRESSION AVEC TOAST ET CONFIRMATION STYLEE ---
+    const handleDeleteDonor = async (donor) => {
+        if (donor.nombreDons > 0) {
+            Toast.fire({
+                icon: 'error',
+                title: 'Action impossible',
+                text: 'Ce donateur possède un historique.'
+            });
+            return;
+        }
+
+        const result = await Swal.fire({
+            title: 'Êtes-vous sûr ?',
+            text: `Le profil de ${donor.nom} sera définitivement supprimé.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Oui, supprimer !',
+            cancelButtonText: 'Annuler'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                await personneService.delete(donor.idPersonne);
+                Toast.fire({
+                    icon: 'success',
+                    title: 'Donateur supprimé'
+                });
+                fetchDonors();
+            } catch (error) {
+                Toast.fire({
+                    icon: 'error',
+                    title: 'Erreur lors de la suppression'
+                });
+            }
         }
     };
 
@@ -59,55 +109,47 @@ const DonorsPage = () => {
         setFilteredDonors(results);
     }, [searchTerm, donors]);
 
+    if (loading) return <div className="p-5 text-center">Chargement de la communauté...</div>;
+
     return (
         <div className="donors-wrapper">
-          <header className="premium-header">
-        <div className="header-top">
-            <div className="brand-section">
-                <div className="brand-icon">
-                    <FaUser />
+            <header className="premium-header">
+                <div className="header-top">
+                    <div className="brand-section">
+                        <div className="brand-icon"><FaUser /></div>
+                        <div className="brand-text">
+                            <h1>Communauté</h1>
+                            <p>Gestion des donateurs et contributeurs</p>
+                        </div>
+                    </div>
+                    <div className="header-stats">
+                        <div className="stat-pill">
+                            <span className="pill-label">Total</span>
+                            <span className="pill-value">{donors.length}</span>
+                        </div>
+                    </div>
                 </div>
-                <div className="brand-text">
-                    <h1>Communauté</h1>
-                    <p>Gestion des donateurs et contributeurs</p>
-                </div>
-            </div>
-            <div className="header-stats">
-                <div className="stat-pill">
-                    <span className="pill-label">Total</span>
-                    <span className="pill-value">{donors.length}</span>
-                </div>
-            </div>
-        </div>
 
-        <div className="header-actions-bar">
-            <div className="search-container-modern">
-                <FaSearch className="search-icon-inner" />
-                <input 
-                    type="text" 
-                    placeholder="Rechercher un membre, une ville..." 
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
-            </div>
-            {/* On peut ajouter d'autres boutons ici plus tard */}
-            <button className="btn-refresh" onClick={fetchDonors} title="Actualiser">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
-            </button>
-        </div>
-    </header>
-
-            <div className="search-box-premium">
-                <FaSearch className="s-icon" />
-                <input 
-                    type="text" 
-                    placeholder="Rechercher par nom ou localisation..." 
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
-            </div>
+                <div className="header-actions-bar">
+                    <div className="search-container-modern">
+                        <FaSearch className="search-icon-inner" />
+                        <input 
+                            type="text" 
+                            placeholder="Rechercher un membre, une ville..." 
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                    <button className="btn-refresh" onClick={fetchDonors} title="Actualiser">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+                    </button>
+                </div>
+            </header>
 
             <div className="donors-grid-modern">
                 {filteredDonors.map(donor => {
                     const rank = getRankDetails(donor.totalVerse);
+                    const canDelete = donor.nombreDons === 0;
+
                     return (
                         <div key={donor.idPersonne} className="donor-card-premium">
                             <div className="card-top-inner">
@@ -136,8 +178,19 @@ const DonorsPage = () => {
 
                             <div className="card-actions-ui">
                                 <button className="btn-details-modern" onClick={() => handleOpenHistory(donor)}>
-                                    <FaInfoCircle /> Voir Historique
+                                    <FaInfoCircle /> Historique
                                 </button>
+                                
+                                {canDelete && (
+                                    <button 
+                                        className="btn-delete-modern" 
+                                        onClick={() => handleDeleteDonor(donor)}
+                                        title="Supprimer"
+                                    >
+                                        <FaTrash />
+                                    </button>
+                                )}
+                                
                                 <button className="btn-icon-only"><FaEnvelope /></button>
                             </div>
                         </div>
@@ -145,7 +198,7 @@ const DonorsPage = () => {
                 })}
             </div>
 
-            {/* MODAL SYSTÈME */}
+            {/* MODAL SYSTÈME (Historique) */}
             {isModalOpen && (
                 <div className="modal-portal-overlay" onClick={() => setIsModalOpen(false)}>
                     <div className="modal-window-solid" onClick={e => e.stopPropagation()}>
@@ -174,15 +227,14 @@ const DonorsPage = () => {
                                     <tbody>
                                         {donorHistory.map((h, i) => (
                                           <tr key={i}>
-                                          <td>{new Date(h.dateDon).toLocaleDateString('fr-FR')}</td>
-                                          <td>
-                                              {/* Affichage du type de don avec une couleur dynamique si nécessaire */}
-                                              <span className={`tag-type type-${h.TypeDon?.libelle?.toLowerCase().replace(/\s/g, '-') || 'default'}`}>
-                                                  {h.TypeDon?.libelle || 'Don standard'}
-                                              </span>
-                                          </td>
-                                          <td className="amount-text">{parseFloat(h.montant).toLocaleString()} Ar</td>
-                                      </tr>
+                                            <td>{new Date(h.dateDon).toLocaleDateString('fr-FR')}</td>
+                                            <td>
+                                                <span className={`tag-type type-${h.TypeDon?.libelle?.toLowerCase().replace(/\s/g, '-') || 'default'}`}>
+                                                    {h.TypeDon?.libelle || 'Don standard'}
+                                                </span>
+                                            </td>
+                                            <td className="amount-text">{parseFloat(h.montant).toLocaleString()} Ar</td>
+                                          </tr>
                                         ))}
                                     </tbody>
                                 </table>

@@ -1,0 +1,77 @@
+.maharitra-container {
+    background-color: #f8f9fa;
+    min-height: 100vh;
+}
+
+/* Wrapper pour permettre le scroll horizontal tout en gardant une belle bordure */
+.maharitra-table-wrapper {
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.maharitra-table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+/* 🎯 ASTUCE UX : Garder la colonne Nom visible quand on scrolle horizontalement */
+.maharitra-table .sticky-col {
+    position: sticky;
+    left: 0;
+    background-color: #ffffff;
+    z-index: 2;
+    border-right: 2px solid #e9ecef;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.02);
+}
+
+.maharitra-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: #f8f9fa;
+    box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Si la cellule entête est à la fois en haut et à gauche */
+.maharitra-table thead th.sticky-col {
+    z-index: 3;
+}
+
+/* Design du badge quand c'est payé */
+.paid-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #ecfdf5; /* Vert très très clair */
+    border: 1px solid #a7f3d0;
+    border-radius: 8px;
+    padding: 6px 4px;
+    transition: all 0.2s ease-in-out;
+    cursor: default;
+}
+
+.paid-badge:hover {
+    background-color: #d1fae5;
+    transform: scale(1.05);
+}
+
+.paid-amount {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #065f46;
+    line-height: 1;
+    margin-bottom: 2px;
+    white-space: nowrap;
+}
+
+.paid-date {
+    font-size: 0.65rem;
+    color: #059669;
+    line-height: 1;
+}
+
+/* Personnalisation légère pour les couleurs de succès */
+.table-success-subtle {
+    background-color: rgba(209, 250, 229, 0.3) !important;
+}

@@ -459,3 +459,18 @@
     border-color: var(--primary);
     transform: rotate(30deg);
 }
+.btn-delete-modern {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-delete-modern:hover {
+    background: #dc3545;
+    color: white;
+    transform: translateY(-2px);
+}

@@ -25,7 +25,7 @@ const StatistiquesPage = () => {
     }, [selectedYear]);
 
     // ============================================================
-    // LA FONCTION LOADDATA (CORRIGÉE)
+    // LA FONCTION LOADDATA 
     // ============================================================
     const loadData = async () => {
         setLoading(true);

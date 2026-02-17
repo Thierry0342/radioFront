@@ -156,7 +156,7 @@ const selectedTypeLabel = donationTypes.find(t => t.id == don.idType)?.libelle |
     // --- Fonction pour charger la liste des dons récents ---
     const fetchRecentDons = async () => {
         try {
-            const response = await donService.getRecentDons(10); 
+            const response = await donService.getRecentDons(100); 
             setRecentDons(response.data || []);
         } catch (error) {
             console.error("Erreur lors du chargement des dons récents:", error);
@@ -235,37 +235,39 @@ const handleAddNewType = async () => {
     }, []); 
 
     // --- EFFECT 2 : Chargement du Statut Mensuel ---
-    useEffect(() => {
-        const fetchMonthlyStatus = async () => {
-            if (selectedPersonId === 0 || !isMaharitra) {
-                setMonthlyStatus(mapExistingPaymentsToStatus());
-                setPaymentsToRecord([]); 
-                return;
-            }
+ // --- EFFECT 2 : Chargement du Statut Mensuel ---
+useEffect(() => {
+    // 🛑 AJOUT : Si on est en mode édition, on ne laisse pas cet effet écraser nos données
+    if (isEditing) return; 
+
+    const fetchMonthlyStatus = async () => {
+        if (selectedPersonId === 0 || !isMaharitra) {
+            setMonthlyStatus(mapExistingPaymentsToStatus());
+            setPaymentsToRecord([]); 
+            return;
+        }
+        
+        setIsLoading(true);
+        try {
+            const response = await donMensuelService.getMaharitraStatus(
+                selectedPersonId, 
+                maharitraCommitment.annee
+            );
             
-            setIsLoading(true);
-            try {
-                const response = await donMensuelService.getMaharitraStatus(
-                    selectedPersonId, 
-                    maharitraCommitment.annee
-                );
-                
-                const fetchedPayments = response.data || []; 
-                setMonthlyStatus(mapExistingPaymentsToStatus(fetchedPayments));
-                
-            } catch (error) {
-                console.error("Erreur lors du chargement du statut Maharitra:", error);
-                setMonthlyStatus(mapExistingPaymentsToStatus()); 
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        
-        fetchMonthlyStatus();
-        
-    }, [selectedPersonId, maharitraCommitment.annee, isMaharitra, refreshTrigger]); 
-
-
+            const fetchedPayments = response.data || []; 
+            setMonthlyStatus(mapExistingPaymentsToStatus(fetchedPayments));
+            
+        } catch (error) {
+            console.error("Erreur lors du chargement du statut Maharitra:", error);
+            setMonthlyStatus(mapExistingPaymentsToStatus()); 
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    
+    fetchMonthlyStatus();
+    
+}, [selectedPersonId, maharitraCommitment.annee, isMaharitra, refreshTrigger, isEditing]); // Ajout de isEditing ici
     // --- Gestion de la sélection depuis la Modale ---
     const handleDonorSelect = (selectedDonor) => {
         setPersonne({
@@ -444,103 +446,107 @@ const handleAddNewType = async () => {
         if (!donToEditId) return alert("Erreur: ID du don à modifier non trouvé.");
         
         const currentType = donationTypes.find(t => t.id == don.idType);
-        if (!currentType) return alert("Veuillez sélectionner un Type de Don valide.");
-        if (!personne.nom) return alert("Veuillez saisir le nom du donateur.");
         
-        // Préparation du payload de mise à jour
+        // 1. On récupère TOUS les mois qui ont le statut 'PAID' 
+        // (ceux qui étaient déjà là + ceux que tu viens de cocher)
+        const tousLesMoisPayes = monthlyStatus
+            .filter(m => m.statut === 'PAID')
+            .map(m => ({
+                mois: m.mois,
+                montant: m.montantPaye, // Utilise le montant déjà stocké ou calculé
+                datePaiement: don.dateDon
+            }));
+    
+        // 2. On ajoute aussi ceux qui sont dans "paymentsToRecord" (les nouveaux clics)
+        // On utilise un Map pour éviter les doublons si un mois est dans les deux
+        const mensuelsMap = new Map();
+        tousLesMoisPayes.forEach(m => mensuelsMap.set(m.mois, m));
+        paymentsToRecord.forEach(m => mensuelsMap.set(m.mois, m));
+    
+        const mensuelsFinal = Array.from(mensuelsMap.values());
+    
         const payload = {
             idDon: donToEditId, 
             personne: {
-                // Utiliser l'ID existant de la personne
                 idPersonne: selectedPersonId,
                 nom: personne.nom,
                 contact: personne.contact,
                 adresse: personne.adresse,
             },
             don: {
-                // Le montant sera mis à jour seulement pour les dons TSOTRA ici
-                montant: don.montant, 
                 dateDon: don.dateDon,
                 idType: parseInt(don.idType),
+                // Le montant sera recalculé par le backend, mais on peut envoyer le total pour sécurité
+                montant: mensuelsFinal.reduce((acc, curr) => acc + parseFloat(curr.montant), 0)
             },
+            maharitraDetails: {
+                annee: maharitraCommitment.annee,
+                mensuels: mensuelsFinal // ✅ On envoie la liste complète fusionnée
+            }
         };
-
-        if (isMaharitra) {
-            // En modification Maharitra, on n'ajoute que les NOUVEAUX paiements mensuels sélectionnés
-            if (paymentsToRecord.length > 0) {
-                payload.maharitraDetails = {
-                    annee: maharitraCommitment.annee,
-                    mensuels: paymentsToRecord.map(p => ({
-                        mois: p.mois,
-                        montant: p.montant,
-                        datePaiement: don.dateDon,
-                    })),
-                };
-            }
-            // Retirer le montant principal si on n'ajoute pas de paiement (évite d'écraser le montant total)
-            if (paymentsToRecord.length === 0) {
-                 delete payload.don.montant;
-            }
-        }
-        
+    
         try {
             setIsLoading(true);
             await donService.update(payload); 
-            
-            alert(`✅ Succès! Don ID ${donToEditId} mis à jour.`);
-            
+            alert(`✅ Modification réussie ! Total : ${payload.don.montant} Ar`);
             await fetchRecentDons();
-            resetForm(); // Retour au mode création après la mise à jour
-            
+            resetForm();
         } catch (error) {
-            console.error("Erreur lors de la mise à jour du Don:", error.response?.data || error);
-            alert(`❌ Erreur: Impossible de mettre à jour le Don. Détail: ${error.response?.data?.details || error.message}`);
+            console.error("Erreur update:", error);
+            alert("Erreur lors de la mise à jour.");
         } finally {
             setIsLoading(false);
         }
     };
-
-    // --- Fonction pour charger un Don à éditer ---
     const handleEditDon = async (donData) => {
-        
-        // 1. Définir le mode d'édition
         setIsEditing(true);
         setDonToEditId(donData.idDon);
         
-        // 2. Charger les informations de la personne
+        // Remplissage de la personne
         setPersonne({
             idPersonne: donData.idPersonne || 0, 
             nom: donData.nomDonateur || '',
             contact: donData.contact || '',
             adresse: donData.adresse || '',
         });
-        setSelectedPersonId(donData.idPersonne || 0);
-        
-        // 3. Charger les détails du don
+    
         const typeDon = donationTypes.find(t => t.libelle === donData.libelleType);
-        
         setDon({
-            montant: donData.montant.toString(),
-            dateDon: new Date(donData.dateDon).toISOString().substring(0, 10),
+            montant: donData.montant ? donData.montant.toString() : "0",
+            dateDon: donData.dateDon ? new Date(donData.dateDon).toISOString().substring(0, 10) : "",
             idType: typeDon ? typeDon.id.toString() : null,
         });
-        
-        // 4. Gérer le cas MAHARITRA (assumer l'année du don comme année d'engagement à éditer)
+    
         if (donData.libelleType === 'MAHARITRA') {
-            const annee = new Date(donData.dateDon).getFullYear().toString(); 
-            setMaharitraCommitment({ annee }); 
+            const annee = new Date(donData.dateDon).getFullYear().toString();
+            setMaharitraCommitment({ annee });
+    
+            // On initialise la grille avec le format attendu par ton JSX
+            // IMPORTANT : Vérifie que ta fonction mapExistingPaymentsToStatus crée bien des objets avec { mois, statut, montantPaye }
+            const newStatus = mapExistingPaymentsToStatus(); 
             
-            // Lancement d'un rafraîchissement pour charger le statut mensuel de cette personne/année
-            setRefreshTrigger(prev => prev + 1); 
-            
-        } else {
-            // Réinitialiser les états Maharitra
-            setMaharitraCommitment({ annee: new Date().getFullYear().toString() });
-            setMonthlyStatus(mapExistingPaymentsToStatus());
-            setPaymentsToRecord([]); 
+            if (donData.moisPayes) {
+                const listeMois = donData.moisPayes.split(',').map(m => m.trim());
+                
+                // On calcule un montant estimé par mois pour l'affichage
+                const montantParMois = donData.montant / listeMois.length;
+    
+                newStatus.forEach(m => {
+                    if (listeMois.includes(m.mois)) {
+                        // 🎯 ON ALIGNE SUR TON JSX ICI :
+                        m.statut = 'PAID'; 
+                        m.montantPaye = montantParMois;
+                    } else {
+                        m.statut = 'PENDING';
+                        m.montantPaye = 0;
+                    }
+                });
+                
+                setMonthlyStatus(newStatus);
+                console.log("Interface synchronisée avec le JSX !");
+            }
         }
     };
-
 
     // --- Suppression d'un Don (Utilisé dans le tableau des dons récents) ---
     const handleDeleteDon = async (idDon, nomDonateur) => {
@@ -946,7 +952,7 @@ const saveAllTempDonations = async () => {
             {/* --- LISTE DES DONS RÉCENTS --- */}
             <div className="row mt-5">
                 <div className="col-12">
-                    <h2 className="mb-3"><FaListAlt /> 10 Derniers Dons Enregistrés</h2>
+                    <h2 className="mb-3"><FaListAlt /> 100 Derniers Dons Enregistrés</h2>
                     
                     {recentDons.length === 0 && !isLoading ? (
                         <div className="alert alert-info">Aucun don récent trouvé.</div>
@@ -957,7 +963,7 @@ const saveAllTempDonations = async () => {
                                     <tr>
                                         <th>Date</th>
                                         <th>Nom Donateur</th>
-                                        <th>Contact</th>
+                                        <th>Adresse/Fiangonana</th>
                                         <th>Type de Don</th>
                                         <th>Montant</th>
                                         <th className="text-center" style={{ width: '200px' }}>Action</th>
@@ -969,7 +975,7 @@ const saveAllTempDonations = async () => {
                                             <td>{don.dateDon ? new Date(don.dateDon).toLocaleDateString('fr-FR') : 'N/A'}</td>
                                             {/* Nom Donateur est maintenant présent grâce à la correction API */}
                                             <td>{don.nomDonateur || 'N/A'}</td> 
-                                            <td>{don.contact || 'N/A'}</td>
+                                            <td>{don.adresse || 'N/A'}</td>
                                             <td>
                                                 {don.libelleType || 'N/A'}
                                                 {/* Affichage des mois payés Maharitra */}
