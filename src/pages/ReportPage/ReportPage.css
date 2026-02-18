@@ -269,3 +269,216 @@
 .text-center { text-align: center; }
 .fw-bold { font-weight: 700; }
 .font-14 { font-size: 14pt; }
+:root {
+    --purple-rmm: #7c3aed;
+    --red-rmm: #dc2626;
+    --bg-light: #f8fafc;
+    --paper-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.report-page-wrapper {
+    background-color: var(--bg-light);
+    min-height: 100vh;
+    padding-bottom: 50px;
+}
+
+/* Header fixe et moderne */
+.report-controls {
+    background: white;
+    padding: 15px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.controls-left { display: flex; align-items: center; gap: 20px; }
+.controls-left h1 { font-size: 1.5rem; font-weight: 700; margin: 0; color: #1e293b; }
+
+.date-picker-custom {
+    background: #f1f5f9;
+    padding: 8px 15px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.date-picker-custom input {
+    border: none;
+    background: transparent;
+    font-weight: 600;
+    color: var(--purple-rmm);
+}
+
+/* Cards de statistiques */
+.summary-grid {
+    display: flex;
+    gap: 20px;
+    padding: 20px 40px;
+}
+
+.stat-card {
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex: 1;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+}
+
+.stat-icon {
+    width: 50px; height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center; justify-content: center;
+    font-size: 1.5rem;
+}
+.stat-icon.purple { background: #f5f3ff; color: var(--purple-rmm); }
+.stat-icon.blue { background: #eff6ff; color: #2563eb; }
+
+/* L'effet papier du rapport */
+.paper-report {
+    background: white;
+    max-width: 1000px;
+    margin: 20px auto;
+    padding: 50px;
+    border-radius: 4px; /* Coins moins arrondis pour style papier */
+}
+
+.paper-header {
+    border-bottom: 3px solid #f1f5f9;
+    padding-bottom: 20px;
+    margin-bottom: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.red-title { color: var(--red-rmm); font-weight: 800; letter-spacing: -1px; }
+
+.badge-date {
+    background: #fef2f2;
+    color: var(--red-rmm);
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.8rem;
+}
+
+/* Tableau moderne */
+.modern-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.modern-table thead th {
+    background: #f8fafc;
+    color: #64748b;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    padding: 12px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.modern-table tbody td {
+    padding: 15px 12px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.group-divider {
+    background: #fdfaff;
+}
+
+.group-divider td {
+    color: var(--purple-rmm);
+    font-weight: 700;
+    font-size: 0.9rem;
+    padding: 10px 12px !important;
+}
+
+.amount { font-family: 'Courier New', monospace; font-weight: 700; font-size: 1.1rem; }
+
+.tm-badge {
+    background: var(--purple-rmm);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    margin-left: 8px;
+}
+
+.grand-total-row td {
+    background: #1e293b;
+    color: white;
+    font-weight: 800;
+    font-size: 1.3rem;
+    padding: 20px !important;
+}
+
+/* Animations */
+.fade-in { animation: fadeIn 0.5s ease-in-out; }
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.skeleton-loader {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 50px;
+    background: white;
+    border-radius: 8px;
+}
+
+.skeleton-line {
+    height: 20px;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading-shimmer 1.5s infinite;
+    margin-bottom: 15px;
+    border-radius: 4px;
+}
+
+.skeleton-line.header { height: 40px; width: 60%; margin-bottom: 40px; }
+
+@keyframes loading-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+/* Style pour les boutons d'exportation */
+.btn-action {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    color: white; /* Texte du bouton en blanc */
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+/* Force la couleur des icônes à l'intérieur */
+.btn-action svg {
+    color: white !important; /* L'icône devient blanche */
+    font-size: 1.2rem;
+}
+
+/* Couleurs spécifiques par type */
+.btn-action.pdf {
+    background-color: #e11d48; /* Rouge PDF */
+}
+
+.btn-action.excel {
+    background-color: #16a34a; /* Vert Excel */
+}
+
+.btn-action:hover {
+    filter: brightness(1.1);
+    transform: translateY(-2px);
+}
