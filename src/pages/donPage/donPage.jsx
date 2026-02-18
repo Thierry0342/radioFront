@@ -4,6 +4,7 @@ import typeDonService from '../../services/typeDonService';
 import personneService from '../../services/personeService'; 
 import donService from '../../services/donService'; 
 import donMensuelService from '../../services/donMensuelService'; 
+import Swal from 'sweetalert2';
 
 import { 
     FaCheckCircle, FaClock, FaCalendarPlus, FaPlusCircle, 
@@ -444,31 +445,44 @@ useEffect(() => {
     const handleUpdate = async (e) => {
         e.preventDefault();
         if (!donToEditId) return alert("Erreur: ID du don à modifier non trouvé.");
-        
+    
         const currentType = donationTypes.find(t => t.id == don.idType);
-        
-        // 1. On récupère TOUS les mois qui ont le statut 'PAID' 
-        // (ceux qui étaient déjà là + ceux que tu viens de cocher)
-        const tousLesMoisPayes = monthlyStatus
-            .filter(m => m.statut === 'PAID')
-            .map(m => ({
-                mois: m.mois,
-                montant: m.montantPaye, // Utilise le montant déjà stocké ou calculé
-                datePaiement: don.dateDon
-            }));
+        let finalMontant = 0;
+        let maharitraPayload = null;
     
-        // 2. On ajoute aussi ceux qui sont dans "paymentsToRecord" (les nouveaux clics)
-        // On utilise un Map pour éviter les doublons si un mois est dans les deux
-        const mensuelsMap = new Map();
-        tousLesMoisPayes.forEach(m => mensuelsMap.set(m.mois, m));
-        paymentsToRecord.forEach(m => mensuelsMap.set(m.mois, m));
+        // --- LOGIQUE DE CALCUL DU MONTANT ---
+        if (currentType?.libelle === 'MAHARITRA') {
+            // Logique spécifique Maharitra : on fusionne les mois payés
+            const tousLesMoisPayes = monthlyStatus
+                .filter(m => m.statut === 'PAID')
+                .map(m => ({
+                    mois: m.mois,
+                    montant: m.montantPaye,
+                    datePaiement: don.dateDon
+                }));
     
-        const mensuelsFinal = Array.from(mensuelsMap.values());
+            const mensuelsMap = new Map();
+            tousLesMoisPayes.forEach(m => mensuelsMap.set(m.mois, m));
+            paymentsToRecord.forEach(m => mensuelsMap.set(m.mois, m));
+    
+            const mensuelsFinal = Array.from(mensuelsMap.values());
+            
+            // On calcule le montant total basé sur les mois cochés
+            finalMontant = mensuelsFinal.reduce((acc, curr) => acc + parseFloat(curr.montant || 0), 0);
+            
+            maharitraPayload = {
+                annee: maharitraCommitment.annee,
+                mensuels: mensuelsFinal
+            };
+        } else {
+            // Logique pour un don STANDARD : on prend simplement la valeur de l'input
+            finalMontant = parseFloat(don.montant) || 0;
+        }
     
         const payload = {
-            idDon: donToEditId, 
+            idDon: donToEditId,
             personne: {
-                idPersonne: selectedPersonId,
+                idPersonne: selectedPersonId || personne.idPersonne, // Sécurité sur l'ID
                 nom: personne.nom,
                 contact: personne.contact,
                 adresse: personne.adresse,
@@ -476,21 +490,30 @@ useEffect(() => {
             don: {
                 dateDon: don.dateDon,
                 idType: parseInt(don.idType),
-                // Le montant sera recalculé par le backend, mais on peut envoyer le total pour sécurité
-                montant: mensuelsFinal.reduce((acc, curr) => acc + parseFloat(curr.montant), 0)
+                montant: finalMontant // ✅ Montant correct selon le type
             },
-            maharitraDetails: {
-                annee: maharitraCommitment.annee,
-                mensuels: mensuelsFinal // ✅ On envoie la liste complète fusionnée
-            }
+            // On n'envoie maharitraDetails que si c'est un type MAHARITRA
+            ...(maharitraPayload && { maharitraDetails: maharitraPayload })
         };
     
         try {
             setIsLoading(true);
-            await donService.update(payload); 
-            alert(`✅ Modification réussie ! Total : ${payload.don.montant} Ar`);
+            await donService.update(payload);
+            
+            // Utilisation de SweetAlert2 (Toast) comme convenu précédemment
+            Swal.fire({
+                icon: 'success',
+                title: 'Modification réussie !',
+                text: `Total : ${finalMontant.toLocaleString()} Ar`,
+                timer: 3000,
+                showConfirmButton: false,
+                toast: true,
+                position: 'top-end'
+            });
+    
             await fetchRecentDons();
             resetForm();
+            setIsEditing(false); // Sortir du mode édition
         } catch (error) {
             console.error("Erreur update:", error);
             alert("Erreur lors de la mise à jour.");
@@ -521,33 +544,46 @@ useEffect(() => {
             const annee = new Date(donData.dateDon).getFullYear().toString();
             setMaharitraCommitment({ annee });
     
-            // On initialise la grille avec le format attendu par ton JSX
-            // IMPORTANT : Vérifie que ta fonction mapExistingPaymentsToStatus crée bien des objets avec { mois, statut, montantPaye }
             const newStatus = mapExistingPaymentsToStatus(); 
             
-            if (donData.moisPayes) {
-                const listeMois = donData.moisPayes.split(',').map(m => m.trim());
+            // 🌟 NOUVELLE LOGIQUE ICI 🌟
+            // On vérifie si le backend nous a envoyé un tableau avec le détail des mois (ex: donData.details)
+            if (donData.details && donData.details.length > 0) {
                 
-                // On calcule un montant estimé par mois pour l'affichage
-                const montantParMois = donData.montant / listeMois.length;
-    
+                // Si on a les détails exacts depuis la base de données
                 newStatus.forEach(m => {
-                    if (listeMois.includes(m.mois)) {
-                        // 🎯 ON ALIGNE SUR TON JSX ICI :
-                        m.statut = 'PAID'; 
-                        m.montantPaye = montantParMois;
+                    // On cherche le détail exact pour ce mois (ex: JAN)
+                    const vraiPaiement = donData.details.find(d => d.mois === m.mois);
+                    if (vraiPaiement) {
+                        m.statut = 'PAID';
+                        m.montantPaye = vraiPaiement.montant; // ✅ On met 10000 ou 5000, pas de division !
                     } else {
                         m.statut = 'PENDING';
                         m.montantPaye = 0;
                     }
                 });
                 
-                setMonthlyStatus(newStatus);
-                console.log("Interface synchronisée avec le JSX !");
+            } else if (donData.moisPayes) {
+                // ⚠️ ANCIENNE LOGIQUE (De secours) ⚠️
+                // Si le backend n'envoie qu'une chaine de texte "JAN, FEV, MAR"
+                console.warn("Attention: Le backend n'envoie pas les détails exacts, utilisation de la division par défaut.");
+                const listeMois = donData.moisPayes.split(',').map(m => m.trim());
+                const montantParMois = donData.montant / listeMois.length; // ❌ C'est ça qui causait le bug
+    
+                newStatus.forEach(m => {
+                    if (listeMois.includes(m.mois)) {
+                        m.statut = 'PAID';
+                        m.montantPaye = montantParMois;
+                    } else {
+                        m.statut = 'PENDING';
+                        m.montantPaye = 0;
+                    }
+                });
             }
+
+            setMonthlyStatus(newStatus);
         }
     };
-
     // --- Suppression d'un Don (Utilisé dans le tableau des dons récents) ---
     const handleDeleteDon = async (idDon, nomDonateur) => {
         if (!window.confirm(`Êtes-vous sûr de vouloir supprimer définitivement le Don ID ${idDon} fait par ${nomDonateur} ?`)) {

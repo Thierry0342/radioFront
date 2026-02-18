@@ -512,3 +512,61 @@
 .history-table th { background: #4e73df; color: white; padding: 12px; }
 .history-table td { padding: 12px; border-bottom: 1px solid #ddd; }
 .amount-cell { font-weight: bold; color: #2e59d9; }
+.admin-profile-container {
+    position: relative;
+    cursor: pointer;
+}
+
+.admin-profile {
+    display: flex;
+    align-items: center;
+    padding: 5px 10px;
+    border-radius: 8px;
+    transition: background 0.3s;
+}
+
+.admin-profile:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.profile-dropdown {
+    position: absolute;
+    top: 110%;
+    right: 0;
+    background: white;
+    min-width: 180px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    z-index: 1000;
+    padding: 10px 0;
+    border: 1px solid #eee;
+}
+
+.dropdown-item {
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    color: #444;
+    transition: background 0.2s;
+}
+
+.dropdown-item:hover {
+    background: #f8f9fa;
+    color: #667eea;
+}
+
+.logout-item {
+    color: #e74c3c;
+}
+
+.logout-item:hover {
+    background: #fff5f5;
+    color: #c0392b;
+}
+
+.profile-dropdown hr {
+    margin: 5px 0;
+    border: 0;
+    border-top: 1px solid #eee;
+}

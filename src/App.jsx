@@ -5,41 +5,52 @@ import DonPage from "./pages/donPage/donPage";
 import DonorsPage from "./pages/Donateur/DonorsPage";
 import StatePage from "./pages/StatistiquePage/StatistiquesPage";
 import DonHistory from "./pages/DonHistory/DonHistory";
-// 🎯 Import de la nouvelle page Type de Don
 import TypeDonPage from "./pages/TypeDonPage/TypeDonPage"; 
 import Report from "./pages/ReportPage/ReportPage"; 
 import QuickSummary from "./pages/QuickSummary/QuickSummary"; 
 import Maharitra from "./pages/Maharitra/Maharitra"; 
+import Auth from "./pages/auth/LoginPage"; 
 
-
+// Composant pour protéger les routes
+const PrivateRoute = ({ children }) => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    // Si pas d'utilisateur, redirection vers la page de login
+    return user ? children : <Navigate to="/login" replace />;
+};
 
 function App() {
   return (
     <Router>
       <Routes>
         
-        {/* --- ROUTES PRINCIPALES AVEC LAYOUT (Sidebar Fixe) --- */}
-        <Route path="/" element={<Layout />}>
-          
-            {/* Redirection vers le Dashboard au démarrage */}
-            <Route index element={<Navigate to="/dashboard" replace />} />
+        {/* --- ROUTE INDÉPENDANTE (Pas de Sidebar) --- */}
+        <Route path="/login" element={<Auth />} />
 
-            {/* Pages du tableau de bord */}
-            <Route path="dashboard" element={<Dashboard />} />
-            
-            <Route path="saisie-don" element={<DonPage />} /> 
-            <Route path="donateur" element={<DonorsPage />} /> 
-            
-            {/* 🎯 NOUVELLE ROUTE : Configuration des types de dons */}
-            <Route path="type-don" element={<TypeDonPage />} /> 
+        {/* --- ROUTES PROTÉGÉES AVEC LAYOUT --- */}
+        <Route 
+          path="/" 
+          element={
+            <PrivateRoute>
+              <Layout />
+            </PrivateRoute>
+          }
+        >
+          {/* Redirection automatique vers dashboard si on arrive sur "/" */}
+          <Route index element={<Navigate to="/dashboard" replace />} />
 
-            <Route path="statistique" element={<StatePage />} /> 
-            <Route path="historique" element={<DonHistory />} />
-            <Route path="Report" element={<Report />} />
-            <Route path="QuickSummary" element={<QuickSummary />} />
-            <Route path="Maharitra" element={<Maharitra />} />
-            
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="saisie-don" element={<DonPage />} /> 
+          <Route path="donateur" element={<DonorsPage />} /> 
+          <Route path="type-don" element={<TypeDonPage />} /> 
+          <Route path="statistique" element={<StatePage />} /> 
+          <Route path="historique" element={<DonHistory />} />
+          <Route path="Report" element={<Report />} />
+          <Route path="QuickSummary" element={<QuickSummary />} />
+          <Route path="Maharitra" element={<Maharitra />} />
         </Route>
+
+        {/* Redirection si l'URL n'existe pas */}
+        <Route path="*" element={<Navigate to="/login" replace />} />
 
       </Routes>
     </Router>

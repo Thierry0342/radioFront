@@ -29,6 +29,8 @@ const Dashboard = () => {
     const [endDate, setEndDate] = useState('');     
     const [totalFiltered, setTotalFiltered] = useState(0);
 
+    const [typeSearchTerm, setTypeSearchTerm] = useState('');
+
     const [showModal, setShowModal] = useState(false);
     const [modalSearchTerm, setModalSearchTerm] = useState(''); 
     const [currentPage, setCurrentPage] = useState(1);
@@ -361,10 +363,19 @@ const Dashboard = () => {
                             list="typesDonData" 
                             className="form-control form-control-sm" 
                             placeholder="Chercher type..." 
-                            value={selectedTypeId ? donationTypes.find(t => t.idType === selectedTypeId)?.libelle || '' : ''}
+                            // 1. On utilise le terme de recherche pour permettre la saisie libre
+                            value={typeSearchTerm}
                             onChange={(e) => {
-                                const type = donationTypes.find(t => t.libelle === e.target.value);
-                                setSelectedTypeId(type ? type.idType : '');
+                                const val = e.target.value;
+                                setTypeSearchTerm(val); // Permet de voir ce qu'on tape
+
+                                // 2. On cherche si la saisie correspond à un libellé existant
+                                const type = donationTypes.find(t => t.libelle === val);
+                                if (type) {
+                                    setSelectedTypeId(type.idType);
+                                } else if (val === '') {
+                                    setSelectedTypeId('');
+                                }
                             }}
                         />
                         <datalist id="typesDonData">

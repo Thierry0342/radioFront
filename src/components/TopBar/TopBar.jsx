@@ -1,44 +1,46 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // Important pour la navigation
+import { useNavigate } from 'react-router-dom';
 import './TopBar.css';
-import { FaSearch, FaBell, FaCog, FaUserCircle, FaListUl } from 'react-icons/fa';
+import { FaSearch, FaBell, FaCog, FaUserCircle, FaListUl, FaSignOutAlt } from 'react-icons/fa';
 import donService from '../../services/donService'; 
+import authService from '../../services/authService'; // Import du service Auth
 
 const TopBar = ({ title }) => {
     const navigate = useNavigate();
     
     const [showNotifs, setShowNotifs] = useState(false);
+    const [showProfileMenu, setShowProfileMenu] = useState(false); // État pour le menu profil
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
     
-    // On stocke l'ID du dernier don consulté (pour savoir ce qui est "nouveau")
+    // Récupérer l'utilisateur connecté
+    const currentUser = authService.getCurrentUser();
+
     const [lastSeenId, setLastSeenId] = useState(() => {
         return parseInt(localStorage.getItem('lastSeenDonId')) || 0;
     });
+
+    // --- Fonction de Déconnexion ---
+    const handleLogout = () => {
+        authService.logout();
+        navigate('/login');
+    };
 
     const loadNotifications = async () => {
         try {
             const response = await donService.getAll();
             const allDons = response.data;
-
             if (allDons && allDons.length > 0) {
-                // Tri décroissant (plus récent en premier)
                 const sortedDons = [...allDons].sort((a, b) => b.idDon - a.idDon);
                 const latestDons = sortedDons.slice(0, 5);
-                const currentLatestId = sortedDons[0].idDon;
-
-                // Calculer le nombre de dons plus grands que le dernier vu
                 const newDonsCount = sortedDons.filter(d => d.idDon > lastSeenId).length;
                 setUnreadCount(newDonsCount);
-
-                // Formater pour l'affichage
                 const formatted = latestDons.map(don => ({
                     id: don.idDon,
                     message: `${don.nomDonateur} a fait un don de ${don.montant.toLocaleString()} Ar`,
                     type: don.libelleType,
-                    isNew: don.idDon > lastSeenId // Marqueur pour le style
+                    isNew: don.idDon > lastSeenId
                 }));
-
                 setNotifications(formatted);
             }
         } catch (error) {
@@ -48,27 +50,22 @@ const TopBar = ({ title }) => {
 
     useEffect(() => {
         loadNotifications();
-        const interval = setInterval(loadNotifications, 15000); // Check toutes les 15s
+        const interval = setInterval(loadNotifications, 15000);
         return () => clearInterval(interval);
-    }, [lastSeenId]); // Relance si l'ID vu change
+    }, [lastSeenId]);
 
     const handleBellClick = () => {
         setShowNotifs(!showNotifs);
-        // On ne remet pas le compteur à 0 tout de suite, seulement quand on va voir l'historique
-        // ou on peut le faire ici si tu préfères.
+        setShowProfileMenu(false); // Ferme l'autre menu
     };
 
     const handleViewHistory = () => {
-        // 1. On sauvegarde l'ID le plus récent comme étant "vu"
         if (notifications.length > 0) {
             const newestId = notifications[0].id;
             localStorage.setItem('lastSeenDonId', newestId);
             setLastSeenId(newestId);
         }
-        
-        // 2. On redirige vers l'historique en passant l'ancien ID pour le surlignage
         navigate('/historique', { state: { lastId: lastSeenId } });
-        
         setShowNotifs(false);
         setUnreadCount(0);
     };
@@ -88,7 +85,6 @@ const TopBar = ({ title }) => {
                 <div className="icon-group">
                     <div className="notification-container">
                         <FaBell className="topbar-icon" onClick={handleBellClick} />
-                        
                         {unreadCount > 0 && (
                             <span className="notif-badge">{unreadCount > 9 ? '9+' : unreadCount}</span>
                         )}
@@ -113,7 +109,6 @@ const TopBar = ({ title }) => {
                                         <div className="notif-empty">Aucun don récent</div>
                                     )}
                                 </div>
-                                {/* Le bouton qui redirige */}
                                 <div className="notif-footer" onClick={handleViewHistory}>
                                     Voir tout l'historique
                                 </div>
@@ -124,11 +119,29 @@ const TopBar = ({ title }) => {
                     <FaCog className="topbar-icon" />
                 </div>
 
-                <div className="admin-profile">
-                    <div className="admin-info text-end me-2 d-none d-md-block">
-                        <p className="admin-name mb-0">Admin</p>
+                {/* --- Profil avec Menu Déroulant --- */}
+                <div className="admin-profile-container">
+                    <div className="admin-profile" onClick={() => {setShowProfileMenu(!showProfileMenu); setShowNotifs(false);}}>
+                        <div className="admin-info text-end me-2 d-none d-md-block">
+                            <p className="admin-name mb-0">{currentUser?.user?.username || 'Admin'}</p>
+                        </div>
+                        <FaUserCircle className="admin-avatar-icon" />
                     </div>
-                    <FaUserCircle className="admin-avatar-icon" />
+
+                    {showProfileMenu && (
+                        <div className="profile-dropdown">
+                            <div className="dropdown-item" onClick={() => navigate('/profile')}>
+                                <FaUserCircle className="me-2" /> Mon Profil
+                            </div>
+                            <div className="dropdown-item" onClick={() => navigate('/settings')}>
+                                <FaCog className="me-2" /> Paramètres
+                            </div>
+                            <hr />
+                            <div className="dropdown-item logout-item" onClick={handleLogout}>
+                                <FaSignOutAlt className="me-2" /> Déconnexion
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </header>
