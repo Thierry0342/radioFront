@@ -11,18 +11,23 @@ const authService = {
         return response.data;
     },
 
-    // 🎯 AJOUTE CETTE FONCTION ICI
-    async register(username, password) {
-        const response = await axios.post(`${API_URL}/api/auth/register`, { username, password });
+    // 2. Création de compte (AVEC LE RÔLE)
+    async register(username, password, role) {
+        const response = await axios.post(`${API_URL}/api/auth/register`, { 
+            username, 
+            password, 
+            role 
+        });
         return response.data;
     },
 
-    // 2. Déconnexion
+    // 3. Déconnexion
     logout() {
         localStorage.removeItem("user");
+        localStorage.removeItem("lastSeenDonId"); // Optionnel : nettoyer les notifs
     },
 
-    // 3. Récupérer les infos de l'utilisateur actuel
+    // 4. Récupérer l'utilisateur actuel
     getCurrentUser() {
         const user = localStorage.getItem("user");
         return user ? JSON.parse(user) : null;

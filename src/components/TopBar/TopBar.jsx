@@ -1,29 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './TopBar.css';
-import { FaSearch, FaBell, FaCog, FaUserCircle, FaListUl, FaSignOutAlt } from 'react-icons/fa';
+import { FaSearch, FaBell, FaCog, FaUserCircle, FaListUl, FaSignOutAlt, FaUserCheck } from 'react-icons/fa';
 import donService from '../../services/donService'; 
-import authService from '../../services/authService'; // Import du service Auth
+import authService from '../../services/authService'; 
 
 const TopBar = ({ title }) => {
     const navigate = useNavigate();
     
     const [showNotifs, setShowNotifs] = useState(false);
-    const [showProfileMenu, setShowProfileMenu] = useState(false); // État pour le menu profil
+    const [showProfileMenu, setShowProfileMenu] = useState(false);
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
     
-    // Récupérer l'utilisateur connecté
+    // Récupérer l'utilisateur connecté et son rôle
     const currentUser = authService.getCurrentUser();
+    const isAdmin = currentUser?.user?.role === 'ADMIN';
 
     const [lastSeenId, setLastSeenId] = useState(() => {
         return parseInt(localStorage.getItem('lastSeenDonId')) || 0;
     });
 
-    // --- Fonction de Déconnexion ---
     const handleLogout = () => {
         authService.logout();
         navigate('/login');
+    };
+
+    // --- Redirection vers l'approbation ---
+    const handleApprovalNavigation = () => {
+        navigate('/validation-comptes'); // L'URL que nous avons définie dans App.js
     };
 
     const loadNotifications = async () => {
@@ -56,7 +61,7 @@ const TopBar = ({ title }) => {
 
     const handleBellClick = () => {
         setShowNotifs(!showNotifs);
-        setShowProfileMenu(false); // Ferme l'autre menu
+        setShowProfileMenu(false); 
     };
 
     const handleViewHistory = () => {
@@ -116,10 +121,14 @@ const TopBar = ({ title }) => {
                         )}
                     </div>
                     
-                    <FaCog className="topbar-icon" />
+                    {/* --- Icône Paramètres avec accès Approbation --- */}
+                    <FaCog 
+                        className="topbar-icon" 
+                        onClick={isAdmin ? handleApprovalNavigation : () => navigate('/settings')}
+                        title={isAdmin ? "Approbation des comptes" : "Paramètres"}
+                    />
                 </div>
 
-                {/* --- Profil avec Menu Déroulant --- */}
                 <div className="admin-profile-container">
                     <div className="admin-profile" onClick={() => {setShowProfileMenu(!showProfileMenu); setShowNotifs(false);}}>
                         <div className="admin-info text-end me-2 d-none d-md-block">
@@ -133,6 +142,14 @@ const TopBar = ({ title }) => {
                             <div className="dropdown-item" onClick={() => navigate('/profile')}>
                                 <FaUserCircle className="me-2" /> Mon Profil
                             </div>
+                            
+                            {/* Option d'approbation visible seulement pour l'admin dans le menu profil aussi */}
+                            {isAdmin && (
+                                <div className="dropdown-item" onClick={handleApprovalNavigation}>
+                                    <FaUserCheck className="me-2 text-primary" /> Valider Comptes
+                                </div>
+                            )}
+
                             <div className="dropdown-item" onClick={() => navigate('/settings')}>
                                 <FaCog className="me-2" /> Paramètres
                             </div>

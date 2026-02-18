@@ -2,19 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import authService from '../../services/authService';
 import Swal from 'sweetalert2';
-import { FaUser, FaLock, FaEye, FaEyeSlash, FaArrowRight, FaArrowLeft, FaUserPlus } from 'react-icons/fa';
+import { FaUser, FaLock, FaEye, FaEyeSlash, FaArrowRight, FaUserPlus, FaUserTie } from 'react-icons/fa';
 import './LoginPage.css';
 
 const LoginPage = () => {
-    const [isRegisterMode, setIsRegisterMode] = useState(false); // Gère le basculement
+    const [isRegisterMode, setIsRegisterMode] = useState(false);
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [role, setRole] = useState('CONSULTANT');
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    
     const navigate = useNavigate();
 
-    // Redirection automatique si déjà connecté
     useEffect(() => {
         if (authService.getCurrentUser()) {
             navigate('/dashboard');
@@ -37,18 +38,26 @@ const LoginPage = () => {
 
     const handleRegister = async (e) => {
         e.preventDefault();
+        if (password !== confirmPassword) {
+            return Swal.fire({ icon: 'warning', title: 'Attention', text: 'Les mots de passe ne correspondent pas' });
+        }
         setIsLoading(true);
         try {
-            // ⚠️ VÉRIFIE CETTE LIGNE : Elle doit appeler le service
-            const response = await authService.register(username, password); 
-            
-            console.log("Réponse du serveur:", response); // Debug
-    
-            Swal.fire({ icon: 'success', title: 'Compte créé !' });
-            setIsRegisterMode(false); 
+            await authService.register(username, password, role); 
+            Swal.fire({ 
+                icon: 'success', 
+                title: 'Compte créé !', 
+                text: 'Votre demande est en attente de validation par l\'administrateur.' 
+            });
+            setIsRegisterMode(false);
+            setPassword('');
+            setConfirmPassword('');
         } catch (error) {
-            console.error("Erreur register:", error);
-            Swal.fire({ icon: 'error', title: 'Erreur', text: 'Échec de création' });
+            Swal.fire({ 
+                icon: 'error', 
+                title: 'Erreur', 
+                text: error.response?.data?.error || 'Impossible de créer le compte' 
+            });
         } finally {
             setIsLoading(false);
         }
@@ -58,12 +67,21 @@ const LoginPage = () => {
         <div className="login-wrapper">
             <div className={`login-container ${isRegisterMode ? 'register-active' : ''}`}>
                 
-                {/* --- PANNEAU IMAGE / LOGO --- */}
-                <div className="login-image-section">
+                {/* --- PANNEAU IMAGE AVEC FOND DYNAMIQUE --- */}
+                <div 
+                    className="login-image-section"
+                    style={{ 
+                        backgroundImage: `url('/images/radio.jpg')`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center'
+                    }}
+                >
+                    <div className="image-overlay"></div> {/* Voile pour la lisibilité */}
                     <div className="overlay-text">
-                        <h1>Radio Maria</h1>
+       
+                        <h3>Radio Maria Madagasikara</h3>
                         <p>{isRegisterMode ? "Rejoignez notre équipe d'administration." : "Plateforme de gestion des dons et donateurs."}</p>
-                        <button className="btn-outline" onClick={() => setIsRegisterMode(!isRegisterMode)}>
+                        <button type="button" className="btn-outline" onClick={() => setIsRegisterMode(!isRegisterMode)}>
                             {isRegisterMode ? "J'ai déjà un compte" : "Créer un compte"}
                         </button>
                     </div>
@@ -72,20 +90,21 @@ const LoginPage = () => {
                 {/* --- PANNEAU FORMULAIRES --- */}
                 <div className="login-form-section">
                     <div className="form-content">
-                        
-                        {/* FORMULAIRE LOGIN */}
                         {!isRegisterMode ? (
                             <form onSubmit={handleLogin} className="login-form animate-fade">
-                                <h2>Bon retour !</h2>
+                                <div className="form-header">
+                                    <h2>Bon retour !</h2>
+                                    <p>Connectez-vous pour accéder au panel</p>
+                                </div>
                                 <div className="input-group">
                                     <label><FaUser /> Utilisateur</label>
-                                    <input type="text" placeholder="Admin" value={username} onChange={(e) => setUsername(e.target.value)} required />
+                                    <input type="text" placeholder="Votre pseudo" value={username} onChange={(e) => setUsername(e.target.value)} required />
                                 </div>
                                 <div className="input-group">
                                     <label><FaLock /> Mot de passe</label>
                                     <div className="password-wrapper">
                                         <input type={showPassword ? "text" : "password"} placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
-                                        <span onClick={() => setShowPassword(!showPassword)}>{showPassword ? <FaEyeSlash /> : <FaEye />}</span>
+                                        <span className="toggle-password" onClick={() => setShowPassword(!showPassword)}>{showPassword ? <FaEyeSlash /> : <FaEye />}</span>
                                     </div>
                                 </div>
                                 <button type="submit" className="btn-login" disabled={isLoading}>
@@ -93,30 +112,39 @@ const LoginPage = () => {
                                 </button>
                             </form>
                         ) : (
-                            /* FORMULAIRE CREATION */
                             <form onSubmit={handleRegister} className="login-form animate-fade">
-                                <h2>Nouveau Compte</h2>
+                                <div className="form-header">
+                                    <h2>Nouveau Compte</h2>
+                                    <p>Remplissez les détails ci-dessous</p>
+                                </div>
                                 <div className="input-group">
                                     <label><FaUser /> Nom d'utilisateur</label>
-                                    <input type="text" placeholder="Nouvel admin" value={username} onChange={(e) => setUsername(e.target.value)} required />
+                                    <input type="text" placeholder="Pseudo" value={username} onChange={(e) => setUsername(e.target.value)} required />
                                 </div>
                                 <div className="input-group">
-                                    <label><FaLock /> Mot de passe</label>
-                                    <input type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                                    <label><FaUserTie /> Rôle souhaité</label>
+                                    <select value={role} onChange={(e) => setRole(e.target.value)} className="role-select" required>
+                                        <option value="CONSULTANT">Consultant</option>
+                                        <option value="ADMIN">Administrateur</option>
+                                    </select>
                                 </div>
-                                <div className="input-group">
-                                    <label><FaLock /> Confirmer</label>
-                                    <input type="password" placeholder="••••••••" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
+                                <div className="input-row">
+                                    <div className="input-group flex-1">
+                                        <label><FaLock /> Password</label>
+                                        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                                    </div>
+                                    <div className="input-group flex-1">
+                                        <label><FaLock /> Confirm</label>
+                                        <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
+                                    </div>
                                 </div>
                                 <button type="submit" className="btn-register" disabled={isLoading}>
                                     {isLoading ? "Création..." : <>Créer le compte <FaUserPlus /></>}
                                 </button>
                             </form>
                         )}
-                        
                     </div>
                 </div>
-
             </div>
         </div>
     );

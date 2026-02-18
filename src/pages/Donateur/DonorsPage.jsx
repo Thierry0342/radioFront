@@ -3,9 +3,9 @@ import donService from '../../services/donService';
 import personneService from '../../services/personeService';
 import { 
     FaUser, FaSearch, FaEnvelope, FaMapMarkerAlt, 
-    FaInfoCircle, FaTimes, FaCrown, FaGem, FaMedal, FaTrash 
+    FaInfoCircle, FaTimes, FaCrown, FaGem, FaMedal, FaTrash, FaLock 
 } from 'react-icons/fa';
-import Swal from 'sweetalert2'; // Importation de SweetAlert2
+import Swal from 'sweetalert2';
 import './DonorsPage.css';
 
 const DonorsPage = () => {
@@ -19,7 +19,10 @@ const DonorsPage = () => {
     const [donorHistory, setDonorHistory] = useState([]);
     const [loadingHistory, setLoadingHistory] = useState(false);
 
-    // Configuration du Toast SweetAlert2
+    // 1. Récupération du rôle de l'utilisateur
+    const user = JSON.parse(localStorage.getItem('user'));
+    const isAdmin = user?.user?.role === 'ADMIN';
+
     const Toast = Swal.mixin({
         toast: true,
         position: 'top-end',
@@ -45,8 +48,17 @@ const DonorsPage = () => {
         }
     };
 
-    // --- FONCTION SUPPRESSION AVEC TOAST ET CONFIRMATION STYLEE ---
     const handleDeleteDonor = async (donor) => {
+        // 2. Sécurité : Vérifier si l'utilisateur est ADMIN
+        if (!isAdmin) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Accès refusé',
+                text: 'Seul un administrateur peut supprimer un membre de la communauté.',
+            });
+            return;
+        }
+
         if (donor.nombreDons > 0) {
             Toast.fire({
                 icon: 'error',
@@ -119,7 +131,7 @@ const DonorsPage = () => {
                         <div className="brand-icon"><FaUser /></div>
                         <div className="brand-text">
                             <h1>Communauté</h1>
-                            <p>Gestion des donateurs et contributeurs</p>
+                            <p>Gestion des donateurs {!isAdmin && <span className="badge-consultant"><FaLock /> Lecture seule</span>}</p>
                         </div>
                     </div>
                     <div className="header-stats">
@@ -148,7 +160,8 @@ const DonorsPage = () => {
             <div className="donors-grid-modern">
                 {filteredDonors.map(donor => {
                     const rank = getRankDetails(donor.totalVerse);
-                    const canDelete = donor.nombreDons === 0;
+                    // 3. Le bouton supprimer ne s'affiche que si c'est un ADMIN ET qu'il n'y a pas de dons
+                    const showDeleteBtn = isAdmin && donor.nombreDons === 0;
 
                     return (
                         <div key={donor.idPersonne} className="donor-card-premium">
@@ -181,7 +194,8 @@ const DonorsPage = () => {
                                     <FaInfoCircle /> Historique
                                 </button>
                                 
-                                {canDelete && (
+                                {/* ✅ Rendu conditionnel du bouton supprimer */}
+                                {showDeleteBtn ? (
                                     <button 
                                         className="btn-delete-modern" 
                                         onClick={() => handleDeleteDonor(donor)}
@@ -189,6 +203,9 @@ const DonorsPage = () => {
                                     >
                                         <FaTrash />
                                     </button>
+                                ) : (
+                                    /* Optionnel : On peut mettre une enveloppe grise ou rien du tout */
+                                    isAdmin && donor.nombreDons > 0 && <span className="btn-lock-info" title="Donateur actif"><FaLock /></span>
                                 )}
                                 
                                 <button className="btn-icon-only"><FaEnvelope /></button>

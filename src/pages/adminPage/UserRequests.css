@@ -1,0 +1,181 @@
+/* UserRequests.css */
+
+.admin-requests-container {
+    padding: 20px;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+/* En-tête stylisé */
+.admin-requests-container .premium-header {
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+    color: white;
+    padding: 30px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.2);
+}
+
+.brand-section {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.brand-icon {
+    font-size: 2.5rem;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 15px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.brand-text h1 {
+    margin: 0;
+    font-size: 1.8rem;
+    letter-spacing: -0.5px;
+}
+
+.brand-text p {
+    margin: 5px 0 0 0;
+    opacity: 0.9;
+    font-size: 0.95rem;
+}
+
+/* Table des requêtes */
+.requests-table-wrapper {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+}
+
+.requests-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.requests-table th {
+    background-color: #f8fafc;
+    padding: 16px 24px;
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.requests-table td {
+    padding: 18px 24px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+    vertical-align: middle;
+}
+
+.requests-table tr:last-child td {
+    border-bottom: none;
+}
+
+.requests-table tr:hover {
+    background-color: #f1f5f9;
+    transition: background 0.2s ease;
+}
+
+.username-cell {
+    font-weight: 700;
+    color: #1e293b;
+}
+
+/* Badges de rôle */
+.role-tag {
+    background-color: #e0f2fe;
+    color: #0369a1;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+/* Cellule des actions */
+.actions-cell {
+    display: flex;
+    gap: 12px;
+}
+
+/* Boutons */
+.btn-approve, .btn-reject {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-approve {
+    background-color: #dcfce7;
+    color: #15803d;
+}
+
+.btn-approve:hover {
+    background-color: #15803d;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(21, 128, 61, 0.2);
+}
+
+.btn-reject {
+    background-color: #fee2e2;
+    color: #b91c1c;
+}
+
+.btn-reject:hover {
+    background-color: #b91c1c;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(185, 28, 28, 0.2);
+}
+
+/* État vide */
+.empty-msg {
+    padding: 60px !important;
+    text-align: center;
+    color: #94a3b8;
+}
+
+/* Loader */
+.loader-box {
+    text-align: center;
+    padding: 50px;
+    color: #3b82f6;
+    font-weight: 600;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.spin {
+    animation: spin 1s linear infinite;
+    font-size: 2rem;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}

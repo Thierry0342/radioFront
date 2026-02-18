@@ -295,3 +295,88 @@
     background: #38a169;
     box-shadow: 0 5px 15px rgba(72, 187, 120, 0.4);
 }
+.login-wrapper {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f0f2f5;
+}
+
+.login-container {
+    display: flex;
+    width: 900px;
+    height: 550px;
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    overflow: hidden;
+    transition: all 0.6s ease-in-out;
+}
+
+/* Basculement des panneaux */
+.register-active {
+    flex-direction: row-reverse;
+}
+
+.login-image-section {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+/* Le voile sombre pour lire le texte sur l'image */
+.image-overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(135deg, rgba(30, 58, 138, 0.8) 0%, rgba(59, 130, 246, 0.4) 100%);
+    z-index: 1;
+}
+
+.overlay-text {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    padding: 40px;
+}
+
+.overlay-text h1 { font-size: 2.5rem; margin-bottom: 15px; }
+.overlay-text p { font-size: 1rem; margin-bottom: 30px; opacity: 0.9; }
+
+.btn-outline {
+    background: transparent;
+    border: 2px solid white;
+    color: white;
+    padding: 10px 25px;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-outline:hover {
+    background: white;
+    color: #1e3a8a;
+}
+
+.login-form-section {
+    flex: 1.2;
+    padding: 50px;
+    display: flex;
+    align-items: center;
+}
+
+.form-content { width: 100%; }
+
+.input-row { display: flex; gap: 15px; }
+.flex-1 { flex: 1; }
+
+.role-select {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    background: #f9f9f9;
+}

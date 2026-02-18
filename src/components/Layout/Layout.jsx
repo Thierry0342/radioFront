@@ -9,7 +9,8 @@ const Layout = () => {
     <div className="app-container">
       <Sidebar /> 
       <div className="main-content">
-        <TopBar title="Radio Maria Dashboard" />
+        <TopBar title="Tolotanana 
+        Radio Maria Madagasikara" />
         <div className="page-content">
           
            {/* C'est ici que Dashboard, Orders, ou Fleet s'affichera */}

@@ -6,52 +6,63 @@ import DonorsPage from "./pages/Donateur/DonorsPage";
 import StatePage from "./pages/StatistiquePage/StatistiquesPage";
 import DonHistory from "./pages/DonHistory/DonHistory";
 import TypeDonPage from "./pages/TypeDonPage/TypeDonPage"; 
-import Report from "./pages/ReportPage/ReportPage"; 
-import QuickSummary from "./pages/QuickSummary/QuickSummary"; 
-import Maharitra from "./pages/Maharitra/Maharitra"; 
 import Auth from "./pages/auth/LoginPage"; 
+import UserRequests from "./pages/adminPage/UserRequests";
 
-// Composant pour protéger les routes
+// --- IMPORTS DES NOUVELLES PAGES ---
+import ReportPage from "./pages/ReportPage/ReportPage"; // Vérifie bien le chemin
+import QuickSummary from "./pages/QuickSummary/QuickSummary"; 
+import Maharitra from "./pages/Maharitra/Maharitra";
+
+// Vérifie si l'utilisateur est connecté
 const PrivateRoute = ({ children }) => {
     const user = JSON.parse(localStorage.getItem("user"));
-    // Si pas d'utilisateur, redirection vers la page de login
     return user ? children : <Navigate to="/login" replace />;
+};
+
+// 🛡️ Protège les routes réservées à l'ADMIN
+const AdminRoute = ({ children }) => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user) return <Navigate to="/login" replace />;
+    
+    // Si l'utilisateur n'est pas ADMIN, on le redirige vers le dashboard
+    if (user.user?.role !== 'ADMIN') {
+        return <Navigate to="/dashboard" replace />;
+    }
+    
+    return children;
 };
 
 function App() {
   return (
     <Router>
       <Routes>
-        
-        {/* --- ROUTE INDÉPENDANTE (Pas de Sidebar) --- */}
+        {/* Route publique */}
         <Route path="/login" element={<Auth />} />
 
-        {/* --- ROUTES PROTÉGÉES AVEC LAYOUT --- */}
-        <Route 
-          path="/" 
-          element={
-            <PrivateRoute>
-              <Layout />
-            </PrivateRoute>
-          }
-        >
-          {/* Redirection automatique vers dashboard si on arrive sur "/" */}
+        {/* Routes protégées par connexion */}
+        <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>
           <Route index element={<Navigate to="/dashboard" replace />} />
-
+          
+          {/* ✅ ACCESSIBLE À TOUS (Admin + Consultant) */}
           <Route path="dashboard" element={<Dashboard />} />
-          <Route path="saisie-don" element={<DonPage />} /> 
-          <Route path="donateur" element={<DonorsPage />} /> 
-          <Route path="type-don" element={<TypeDonPage />} /> 
           <Route path="statistique" element={<StatePage />} /> 
           <Route path="historique" element={<DonHistory />} />
-          <Route path="Report" element={<Report />} />
+          <Route path="donateur" element={<DonorsPage />} /> 
+          
+          {/* Nouvelles routes accessibles par tous */}
+          <Route path="Report" element={<ReportPage />} />
           <Route path="QuickSummary" element={<QuickSummary />} />
           <Route path="Maharitra" element={<Maharitra />} />
+
+          {/* 🔒 ACCESSIBLE UNIQUEMENT AUX ADMINS */}
+          <Route path="saisie-don" element={<AdminRoute><DonPage /></AdminRoute>} /> 
+          <Route path="type-don" element={<AdminRoute><TypeDonPage /></AdminRoute>} /> 
+          <Route path="validation-comptes" element={<AdminRoute><UserRequests /></AdminRoute>} />
         </Route>
 
-        {/* Redirection si l'URL n'existe pas */}
+        {/* Redirection automatique si la route n'existe pas */}
         <Route path="*" element={<Navigate to="/login" replace />} />
-
       </Routes>
     </Router>
   );
